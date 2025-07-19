@@ -5,5 +5,5 @@ import { createHash } from "crypto";
  * @returns {string} The hex-encoded SHA256 hash
  */
 export function sha256(text) {
- return createHash("sha256").update(text, "utf8").digest("hex");
+	return createHash("sha256").update(text, "utf8").digest("hex");
 }

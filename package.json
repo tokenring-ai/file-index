@@ -1,29 +1,29 @@
 {
-  "name": "@token-ring/file-index",
-  "version": "0.1.0",
-  "dependencies": {
-    "@token-ring/chat": "0.1.0",
-    "@token-ring/eslint-config": "0.0.0",
-    "@token-ring/filesystem": "0.1.0",
-    "@token-ring/registry": "0.1.0",
-    "chokidar": "^4.0.3",
-    "commander": "^14.0.0",
-    "glob-gitignore": "^1.0.15",
-    "gpt-tokenizer": "^3.0.1",
-    "mysql2": "^3.14.1",
-    "sentencex": "^0.4.2",
-    "sqlite-vec": "0.1.7-alpha.2",
-    "tree-sitter": "*",
-    "tree-sitter-javascript": "*"
-  },
-  "exports": {
-    ".": "./index.js",
-    "./*": "./*.js"
-  },
-  "private": true,
-  "scripts": {
-    "lint": "eslint ",
-    "eslint": "eslint --fix ./"
-  },
-  "type": "module"
+	"name": "@token-ring/file-index",
+	"version": "0.1.0",
+	"dependencies": {
+		"@token-ring/chat": "0.1.0",
+		"@token-ring/eslint-config": "0.0.0",
+		"@token-ring/filesystem": "0.1.0",
+		"@token-ring/registry": "0.1.0",
+		"chokidar": "^4.0.3",
+		"commander": "^14.0.0",
+		"glob-gitignore": "^1.0.15",
+		"gpt-tokenizer": "^3.0.1",
+		"mysql2": "^3.14.1",
+		"sentencex": "^0.4.2",
+		"sqlite-vec": "0.1.7-alpha.2",
+		"tree-sitter": "*",
+		"tree-sitter-javascript": "*"
+	},
+	"exports": {
+		".": "./index.js",
+		"./*": "./*.js"
+	},
+	"private": true,
+	"scripts": {
+		"lint": "eslint ",
+		"eslint": "eslint --fix ./"
+	},
+	"type": "module"
 }
