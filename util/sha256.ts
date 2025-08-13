@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import {createHash} from "crypto";
 
 /**
  * Calculates SHA256 hash of the input text

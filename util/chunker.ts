@@ -1,5 +1,5 @@
 import segment from "sentencex";
-import { encode, decode } from "gpt-tokenizer/encoding/cl100k_base";
+import {decode, encode} from "gpt-tokenizer/encoding/cl100k_base";
 
 const DEFAULT_MAX = 256;
 const DEFAULT_OVERLAP = 32;

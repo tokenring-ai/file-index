@@ -1,4 +1,4 @@
-import { Service } from "@token-ring/registry";
+import {Service} from "@token-ring/registry";
 
 export default class FileIndexService extends Service {
 	name = "FileIndexService";
@@ -21,10 +21,10 @@ export default class FileIndexService extends Service {
 	}
 
 	/**
-	 * Full-text search through file chunks.
-	 * @param query The search query string
-	 * @param limit Maximum number of results to return (default: 10)
-	 */
+     * Full-text search through file chunks.
+     * @param _query
+     * @param _limit
+     */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	async fullTextSearch(_query: string, _limit: number = 10): Promise<any[]> {
 		throw new Error(

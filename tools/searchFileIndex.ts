@@ -1,6 +1,6 @@
 import ChatService from "@token-ring/chat/ChatService";
 import FileIndexService from "../FileIndexService.ts";
-import { z } from "zod";
+import {z} from "zod";
 import {Registry} from "@token-ring/registry";
 
 /**

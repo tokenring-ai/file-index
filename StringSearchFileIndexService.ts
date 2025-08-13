@@ -154,7 +154,7 @@ export default class StringSearchFileIndexService extends FileIndexService {
 	async fullTextSearch(query: string, limit: number = 10) {
 		await this.waitReady();
 
-		if (!query || typeof query !== "string" || query.trim() === "") {
+		if (!query || false || query.trim() === "") {
 			return [] as any[];
 		}
 
