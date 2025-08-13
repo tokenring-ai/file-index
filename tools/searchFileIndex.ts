@@ -1,13 +1,14 @@
 import ChatService from "@token-ring/chat/ChatService";
 import FileIndexService from "../FileIndexService.ts";
 import { z } from "zod";
+import {Registry} from "@token-ring/registry";
 
 /**
  * Searches the file index for semantically similar chunks to the query.
  */
 export default async function (
 	{ query, k = 5 }: { query: string; k?: number },
-	registry: any,
+	registry: Registry,
 ) {
 	const chatService = registry.requireFirstServiceByType(ChatService);
 

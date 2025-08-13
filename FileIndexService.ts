@@ -13,7 +13,7 @@ export default class FileIndexService extends Service {
 	async close(_registry?: any): Promise<void> {}
 
 	/** Reports the status of the service. */
-	async status(_registry: any): Promise<{ active: boolean; service: string }> {
+	async status(_registry: Registry): Promise<{ active: boolean; service: string }> {
 		return {
 			active: true,
 			service: "FileIndexService",

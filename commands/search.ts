@@ -8,7 +8,7 @@ import FileIndexService from "../FileIndexService.ts";
 export const description =
 	"/search <query> - Search for text across files in the project.";
 
-export async function execute(remainder: string, registry: any) {
+export async function execute(remainder: string, registry: Registry) {
 	const chatService = registry.requireFirstServiceByType(ChatService);
 	const fileIndexService: FileIndexService | undefined =
 		registry.requireFirstServiceByType(FileIndexService);

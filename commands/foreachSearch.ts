@@ -1,5 +1,6 @@
 import ChatService from "@token-ring/chat/ChatService";
 import FileIndexService from "../FileIndexService.ts";
+import {Registry} from "@token-ring/registry";
 
 /**
  * /foreachSearch <query> -- <command> - Run a command for each file matching the search query
@@ -8,24 +9,28 @@ import FileIndexService from "../FileIndexService.ts";
 export const description =
 	"/foreachSearch <search-query> -- <command> - Search for text across files and run a command for each matching file";
 
-export async function execute(remainder: string, registry: any) {
+export async function execute(remainder: string, registry: Registry) {
 	const chatService = registry.requireFirstServiceByType(ChatService);
 	const fileIndexService: FileIndexService | undefined =
 		registry.requireFirstServiceByType(FileIndexService);
 
 	// Check if we have a valid remainder
 	if (!remainder || !remainder.trim()) {
-		this.help(chatService);
+        for (const line of help()) {
+            chatService.systemLine(line);
+        }
 		return;
 	}
 
 	// Split the remainder into query and command parts
 	const parts = remainder.split(/\s+--\s+/);
 	if (parts.length < 2) {
-		chatService.errorLine(
-			"Missing '--' separator between search query and command",
-		);
-		this.help(chatService);
+        chatService.errorLine(
+            "Missing '--' separator between search query and command",
+        );
+        for (const line of help()) {
+            chatService.systemLine(line);
+        }
 		return;
 	}
 

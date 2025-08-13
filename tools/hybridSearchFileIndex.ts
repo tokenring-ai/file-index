@@ -2,6 +2,7 @@ import FileSystemService from "@token-ring/filesystem/FileSystemService";
 import ChatService from "@token-ring/chat/ChatService";
 import FileIndexService from "../FileIndexService.ts";
 import { z } from "zod";
+import {Registry} from "@token-ring/registry";
 
 /**
  * Hybrid semantic + full-text + token overlap search.
@@ -22,7 +23,7 @@ export default async function (
 		fullTextWeight?: number;
 		mergeRadius?: number;
 	},
-	registry: any,
+	registry: Registry,
 ) {
 	const chatService = registry.requireFirstServiceByType(ChatService);
 	const filesystem = registry.requireFirstServiceByType(FileSystemService);

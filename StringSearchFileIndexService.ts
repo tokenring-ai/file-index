@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs-extra";
 import FileIndexService from "./FileIndexService.ts";
+import {Registry} from "@token-ring/registry";
 
 export default class StringSearchFileIndexService extends FileIndexService {
 	name = "StringSearchFileIndexService";
@@ -13,11 +14,11 @@ export default class StringSearchFileIndexService extends FileIndexService {
 	initializing: Promise<void> | null = null;
 	private timer?: NodeJS.Timeout;
 
-	async start(registry: any) {
+	async start(registry: Registry) {
 		this.initializing = this.lazyInit(registry);
 	}
 
-	async lazyInit(registry: any) {
+	async lazyInit(registry: Registry) {
 		// Start processing queue periodically
 		this.scheduleNextProcessing();
 
