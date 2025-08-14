@@ -1,6 +1,7 @@
 import ChatService from "@token-ring/chat/ChatService";
 import FileIndexService from "../FileIndexService.ts";
-import {Registry} from "@token-ring/registry";
+import type {Registry} from "@token-ring/registry";
+import { runCommand } from "@token-ring/chat/runCommand";
 
 /**
  * /foreachSearch <query> -- <command> - Run a command for each file matching the search query
@@ -75,8 +76,11 @@ export async function execute(remainder: string, registry: Registry) {
 			// Set the current file context
 			fileIndexService.setCurrentFile(relativePath);
 
-			// Run the command
-			await chatService.runCommand(command);
+			// Run the command using the shared runCommand helper
+			const match = command.match(/^\/?(\S+)(?:\s+(.*))?$/);
+			const commandName = match?.[1] ?? "help";
+			const remainder = match?.[2] ?? "";
+			await runCommand(commandName, remainder, registry);
 
 			// Clear the current file context
 			fileIndexService.clearCurrentFile();

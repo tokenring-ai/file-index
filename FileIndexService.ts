@@ -1,4 +1,4 @@
-import {Service} from "@token-ring/registry";
+import {Service, type Registry} from "@token-ring/registry";
 
 export default class FileIndexService extends Service {
 	name = "FileIndexService";

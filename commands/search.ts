@@ -1,5 +1,6 @@
 import ChatService from "@token-ring/chat/ChatService";
 import FileIndexService from "../FileIndexService.ts";
+import type { Registry } from "@token-ring/registry";
 
 /**
  * /search <query> - Search for text across files in the project
