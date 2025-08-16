@@ -1,71 +1,71 @@
 import ChatService from "@token-ring/chat/ChatService";
+import type {Registry} from "@token-ring/registry";
 import FileIndexService from "../FileIndexService.ts";
-import type { Registry } from "@token-ring/registry";
 
 /**
  * /search <query> - Search for text across files in the project
  */
 
 export const description =
-	"/search <query> - Search for text across files in the project.";
+  "/search <query> - Search for text across files in the project.";
 
 export async function execute(remainder: string, registry: Registry) {
-	const chatService = registry.requireFirstServiceByType(ChatService);
-	const fileIndexService: FileIndexService | undefined =
-		registry.requireFirstServiceByType(FileIndexService);
+  const chatService = registry.requireFirstServiceByType(ChatService);
+  const fileIndexService: FileIndexService | undefined =
+    registry.requireFirstServiceByType(FileIndexService);
 
-	if (!remainder || !remainder.trim()) {
-		chatService.errorLine("Usage: /search <query>");
-		return;
-	}
+  if (!remainder || !remainder.trim()) {
+    chatService.errorLine("Usage: /search <query>");
+    return;
+  }
 
-	if (!fileIndexService) {
-		chatService.errorLine(
-			"FileIndexService not found. Please add it to your context configuration.",
-		);
-		return;
-	}
+  if (!fileIndexService) {
+    chatService.errorLine(
+      "FileIndexService not found. Please add it to your context configuration.",
+    );
+    return;
+  }
 
-	try {
-		// Wait for the file index to be ready
-		await (fileIndexService as any).waitReady?.();
+  try {
+    // Wait for the file index to be ready
+    await (fileIndexService as any).waitReady?.();
 
-		// Default limit to 10 results
-		const limit = 10;
-		const query = remainder.trim();
+    // Default limit to 10 results
+    const limit = 10;
+    const query = remainder.trim();
 
-		chatService.systemLine(`Searching for: "${query}"...`);
+    chatService.systemLine(`Searching for: "${query}"...`);
 
-		// Use the search method from StringSearchFileIndexService
-		const results = await fileIndexService.search(query, limit);
+    // Use the search method from StringSearchFileIndexService
+    const results = await fileIndexService.search(query, limit);
 
-		if (results.length === 0) {
-			chatService.systemLine("No results found.");
-			return;
-		}
+    if (results.length === 0) {
+      chatService.systemLine("No results found.");
+      return;
+    }
 
-		chatService.systemLine(`Found ${results.length} result(s):`);
+    chatService.systemLine(`Found ${results.length} result(s):`);
 
-		// Display each result
-		for (const result of results) {
-			const relativePath = (result.path as string)
-				.replace(fileIndexService.baseDirectory, "")
-				.replace(/^[/\\]/, "");
+    // Display each result
+    for (const result of results) {
+      const relativePath = (result.path as string)
+        .replace(fileIndexService.baseDirectory, "")
+        .replace(/^[/\\]/, "");
 
-			// Format the output to show the file path and the matching content
-			chatService.systemLine(`📄 ${relativePath}:`);
+      // Format the output to show the file path and the matching content
+      chatService.systemLine(`📄 ${relativePath}:`);
 
-			// Display the content with some context
-			const content = (result.content as string).trim();
-			chatService.out(content);
-			chatService.out("\n");
-		}
-	} catch (error: any) {
-		chatService.errorLine(`Error during search: ${error.message}`);
-		console.error("Search command error:", error);
-	}
+      // Display the content with some context
+      const content = (result.content as string).trim();
+      chatService.out(content);
+      chatService.out("\n");
+    }
+  } catch (error: any) {
+    chatService.errorLine(`Error during search: ${error.message}`);
+    console.error("Search command error:", error);
+  }
 }
 
 export function help() {
-	return ["/search <query> - Search for text across files in the project."];
+  return ["/search <query> - Search for text across files in the project."];
 }

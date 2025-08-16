@@ -1,54 +1,55 @@
-import {Service, type Registry} from "@token-ring/registry";
+import {type Registry, Service} from "@token-ring/registry";
 
 export default class FileIndexService extends Service {
-	name = "FileIndexService";
-	description = "Provides FileIndex functionality";
+  name = "FileIndexService";
+  description = "Provides FileIndex functionality";
 
-	// Base directory for resolving relative file paths; default to CWD
-	public baseDirectory: string = process.cwd();
+  // Base directory for resolving relative file paths; default to CWD
+  public baseDirectory: string = process.cwd();
 
-	private currentFile: string | null = null;
+  private currentFile: string | null = null;
 
-	/** Optional close hook so subclasses can call super.close() safely */
-	async close(_registry?: any): Promise<void> {}
+  /** Optional close hook so subclasses can call super.close() safely */
+  async close(_registry?: any): Promise<void> {
+  }
 
-	/** Reports the status of the service. */
-	async status(_registry: Registry): Promise<{ active: boolean; service: string }> {
-		return {
-			active: true,
-			service: "FileIndexService",
-		};
-	}
+  /** Reports the status of the service. */
+  async status(_registry: Registry): Promise<{ active: boolean; service: string }> {
+    return {
+      active: true,
+      service: "FileIndexService",
+    };
+  }
 
-	/**
-     * Full-text search through file chunks.
-     * @param _query
-     * @param _limit
-     */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async fullTextSearch(_query: string, _limit: number = 10): Promise<any[]> {
-		throw new Error(
-			`The ${import.meta.filename} class is abstract and cannot be used directly. Please use a subclass instead.`,
-		);
-	}
+  /**
+   * Full-text search through file chunks.
+   * @param _query
+   * @param _limit
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async fullTextSearch(_query: string, _limit: number = 10): Promise<any[]> {
+    throw new Error(
+      `The ${import.meta.filename} class is abstract and cannot be used directly. Please use a subclass instead.`,
+    );
+  }
 
-	/** Similarity search. */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async search(_query: string, _limit: number = 10): Promise<any[]> {
-		throw new Error(
-			`The ${import.meta.filename} class is abstract and cannot be used directly. Please use a subclass instead.`,
-		);
-	}
+  /** Similarity search. */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async search(_query: string, _limit: number = 10): Promise<any[]> {
+    throw new Error(
+      `The ${import.meta.filename} class is abstract and cannot be used directly. Please use a subclass instead.`,
+    );
+  }
 
-	setCurrentFile(filePath: string) {
-		this.currentFile = filePath;
-	}
+  setCurrentFile(filePath: string) {
+    this.currentFile = filePath;
+  }
 
-	clearCurrentFile() {
-		this.currentFile = null;
-	}
+  clearCurrentFile() {
+    this.currentFile = null;
+  }
 
-	getCurrentFile() {
-		return this.currentFile;
-	}
+  getCurrentFile() {
+    return this.currentFile;
+  }
 }

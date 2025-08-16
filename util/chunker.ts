@@ -1,5 +1,5 @@
-import segment from "sentencex";
 import {decode, encode} from "gpt-tokenizer/encoding/cl100k_base";
+import segment from "sentencex";
 
 const DEFAULT_MAX = 256;
 const DEFAULT_OVERLAP = 32;
@@ -17,7 +17,7 @@ interface ChunkOptions {
  */
 export function chunkText(
   text: string,
-  { maxTokens = DEFAULT_MAX, overlapTokens = DEFAULT_OVERLAP }: ChunkOptions = {},
+  {maxTokens = DEFAULT_MAX, overlapTokens = DEFAULT_OVERLAP}: ChunkOptions = {},
 ): string[] {
   if (!text || !text.trim()) return [];
 
