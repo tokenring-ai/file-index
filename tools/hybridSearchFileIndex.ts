@@ -4,12 +4,14 @@ import {Registry} from "@token-ring/registry";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
+export const name = "file-index/hybridSearchFileIndex";
+
 interface HybridSearchResult {
-  path: string
-  start: number
-  end: number
-  hybridScore: number
-  content: string
+  path: string;
+  start: number;
+  end: number;
+  hybridScore: number;
+  content: string;
 }
 
 /**
@@ -17,7 +19,7 @@ interface HybridSearchResult {
  *
  * Combines: (1) embedding similarity (2) full-text search (3) token overlap
  */
-export default async function (
+export async function execute (
   {
     query,
     topK = 10,
@@ -25,18 +27,21 @@ export default async function (
     fullTextWeight = 0.3,
     mergeRadius = 1,
   }: {
-    query: string;
+    query?: string;
     topK?: number;
     textWeight?: number;
     fullTextWeight?: number;
     mergeRadius?: number;
   },
   registry: Registry,
-): Promise<HybridSearchResult[] | { error: string }> {
+): Promise<HybridSearchResult[]> {
   const chatService = registry.requireFirstServiceByType(ChatService);
   const filesystem = registry.requireFirstServiceByType(FileSystemService);
 
   const fileIndex = registry.requireFirstServiceByType(FileIndexService);
+  if (! query) {
+    throw new Error(`[${name}] Missing query parameter`);
+  }
 
   // Get results from both search methods
   const [embeddingHits, fullTextHits] = await Promise.all([
@@ -93,7 +98,7 @@ export default async function (
       (1 - textWeight - fullTextWeight) * hit.embScore +
       textWeight * hit.textScore +
       fullTextWeight * normalizedFullText;
-    return {...hit, hybridScore};
+    return { ...hit, hybridScore };
   });
 
   // Sort by hybrid score
@@ -102,7 +107,7 @@ export default async function (
   // Deduplicate and merge overlapping/adjacent chunks (per file)
   const byFile: Record<string, any[]> = {};
   for (const hit of sorted) {
-    const {path, chunk_index} = hit;
+    const { path, chunk_index } = hit;
     if (!byFile[path]) byFile[path] = [];
     byFile[path].push(hit);
   }
@@ -110,22 +115,24 @@ export default async function (
   const mergedBlocks: { path: string; indices: number[] }[] = [];
   for (const path in byFile) {
     // Sort chunk indices and merge adjacent/nearby
-    const ranges = byFile[path].map((h) => h.chunk_index).sort((a: number, b: number) => a - b);
+    const ranges = byFile[path]
+      .map((h) => h.chunk_index)
+      .sort((a: number, b: number) => a - b);
     let group: number[] = [];
     let last: number | null = null;
     for (const idx of ranges) {
       if (last !== null && idx > last + mergeRadius) {
-        mergedBlocks.push({path, indices: [...group]});
+        mergedBlocks.push({ path, indices: [...group] });
         group = [];
       }
       group.push(idx);
       last = idx;
     }
-    if (group.length) mergedBlocks.push({path, indices: group});
+    if (group.length) mergedBlocks.push({ path, indices: group });
   }
 
   // For each block, get the best scoring chunk and concatenate contents
-  const results = mergedBlocks.map(({path, indices}) => {
+  const results = mergedBlocks.map(({ path, indices }) => {
     const blockChunks = indices
       .map((idx) => sorted.find((h: any) => h.path === path && h.chunk_index === idx))
       .filter(Boolean) as any[];
@@ -150,7 +157,7 @@ export default async function (
     .slice(0, topK);
 
   chatService.systemLine(
-    `[HybridSearchFileIndex] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`,
+    `[${name}] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`,
   );
   return finalResults;
 }

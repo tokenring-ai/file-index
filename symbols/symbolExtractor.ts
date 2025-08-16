@@ -40,9 +40,9 @@ export async function extractSymbolsFromFile(filePath: string): Promise<
         endLine: node.endPosition.row + 1,
       });
     }
-    node.children?.forEach((child: any) => walk(child, node));
+    node.children?.forEach((child: any) => walk(child));
   }
 
-  walk(tree.rootNode, null);
+  walk(tree.rootNode);
   return symbols;
 }

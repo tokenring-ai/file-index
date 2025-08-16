@@ -1,4 +1,5 @@
 import {decode, encode} from "gpt-tokenizer/encoding/cl100k_base";
+// @ts-ignore
 import segment from "sentencex";
 
 const DEFAULT_MAX = 256;
@@ -8,6 +9,9 @@ interface ChunkOptions {
   maxTokens?: number;
   overlapTokens?: number;
 }
+
+// Type definition for sentencex return types
+type SentenceItem = string | { text: string; [key: string]: any };
 
 /**
  * Chunks text into segments based on token count with optional overlap
@@ -21,7 +25,7 @@ export function chunkText(
 ): string[] {
   if (!text || !text.trim()) return [];
 
-  const sentences = segment("en", text).map((s) => (typeof s === 'string' ? s : s.text || ''));
+  const sentences = segment("en", text).map((s: SentenceItem) => (typeof s === 'string' ? s : s.text || ''));
   const chunks: string[] = [];
   let current: string[] = [],
     currentTok = 0;
