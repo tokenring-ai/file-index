@@ -13,10 +13,7 @@ export default async function (
 	const chatService = registry.requireFirstServiceByType(ChatService);
 
 	const fileIndex = registry.requireFirstServiceByType(FileIndexService);
-	if (!fileIndex) {
-		chatService.errorLine("[ERROR] FileIndexService not found\n");
-		return [] as any[];
-	}
+
 	const hits = await fileIndex.search(query, k);
 	// Each hit has: {path, chunk_index, content, distance, ...}
 	chatService.systemLine(

@@ -4,6 +4,13 @@ import FileIndexService from "../FileIndexService.ts";
 import {z} from "zod";
 import {Registry} from "@token-ring/registry";
 
+interface HybridSearchResult {
+    path: string
+    start: number
+    end: number
+    hybridScore: number
+    content: string
+}
 /**
  * Hybrid semantic + full-text + token overlap search.
  *
@@ -24,19 +31,11 @@ export default async function (
 		mergeRadius?: number;
 	},
 	registry: Registry,
-) {
+) : Promise<HybridSearchResult[] | { error: string }> {
 	const chatService = registry.requireFirstServiceByType(ChatService);
 	const filesystem = registry.requireFirstServiceByType(FileSystemService);
-	if (!filesystem) {
-		chatService.errorLine("[ERROR] FileSystem not found\n");
-		return [] as any[];
-	}
 
 	const fileIndex = registry.requireFirstServiceByType(FileIndexService);
-	if (!fileIndex) {
-		chatService.errorLine("[ERROR] FileIndexService not found\n");
-		return [] as any[];
-	}
 
 	// Get results from both search methods
 	const [embeddingHits, fullTextHits] = await Promise.all([
@@ -149,7 +148,7 @@ export default async function (
 		.slice(0, topK);
 
 	chatService.systemLine(
-		`[FileIndex] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`,
+		`[HybridSearchFileIndex] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`,
 	);
 	return finalResults;
 }
