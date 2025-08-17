@@ -19,16 +19,9 @@ export async function execute(remainder: string, registry: Registry) {
     return;
   }
 
-  if (!fileIndexService) {
-    chatService.errorLine(
-      "FileIndexService not found. Please add it to your context configuration.",
-    );
-    return;
-  }
-
   try {
-    // Wait for the file index to be ready
-    await (fileIndexService as any).waitReady?.();
+    // Wait for the file index to be ready if it provides a waitReady method
+    await fileIndexService.waitReady();
 
     // Default limit to 10 results
     const limit = 10;

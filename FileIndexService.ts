@@ -41,6 +41,8 @@ export default class FileIndexService extends Service {
     );
   }
 
+  async waitReady() {}
+
   setCurrentFile(filePath: string) {
     this.currentFile = filePath;
   }

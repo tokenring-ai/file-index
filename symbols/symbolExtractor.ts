@@ -1,5 +1,5 @@
 import fs from "fs";
-import Parser from "tree-sitter";
+import Parser, { SyntaxNode } from "tree-sitter";
 import JavaScript from "tree-sitter-javascript";
 
 /**
@@ -10,9 +10,9 @@ export async function extractSymbolsFromFile(filePath: string): Promise<
   Array<{ name: string; kind: string; startLine: number; endLine: number }>
 > {
   const code = await fs.promises.readFile(filePath, "utf8");
-  const parser: any = new (Parser as any)();
+  const parser = new Parser();
   // noinspection JSCheckFunctionSignatures
-  parser.setLanguage(JavaScript as any);
+  parser.setLanguage(JavaScript as Parser.Language);
   // noinspection JSCheckFunctionSignatures
   const tree = parser.parse(code);
 
@@ -23,10 +23,10 @@ export async function extractSymbolsFromFile(filePath: string): Promise<
     endLine: number;
   }> = [];
 
-  function walk(node: any) {
+  function walk(node: SyntaxNode) {
     if (node.type === "function_declaration" && node.childForFieldName("name")) {
       symbols.push({
-        name: node.childForFieldName("name").text,
+        name: node.childForFieldName("name")?.text ?? '',
         kind: "function",
         startLine: node.startPosition.row + 1,
         endLine: node.endPosition.row + 1,
@@ -34,13 +34,13 @@ export async function extractSymbolsFromFile(filePath: string): Promise<
     }
     if (node.type === "class_declaration" && node.childForFieldName("name")) {
       symbols.push({
-        name: node.childForFieldName("name").text,
+        name: node.childForFieldName("name")?.text ?? '',
         kind: "class",
         startLine: node.startPosition.row + 1,
         endLine: node.endPosition.row + 1,
       });
     }
-    node.children?.forEach((child: any) => walk(child));
+    node.children?.forEach(walk);
   }
 
   walk(tree.rootNode);
