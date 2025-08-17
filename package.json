@@ -10,11 +10,11 @@
 		"commander": "^14.0.0",
 		"glob-gitignore": "^1.0.15",
 		"gpt-tokenizer": "^3.0.1",
-		"mysql2": "^3.14.1",
+		"mysql2": "^3.14.3",
 		"sentencex": "^0.4.2",
 		"sqlite-vec": "0.1.7-alpha.2",
-		"tree-sitter": "*",
-		"tree-sitter-javascript": "*"
+		"tree-sitter": "^0.25.0",
+		"tree-sitter-javascript": "^0.23.1"
 	},
 	"exports": {
 		".": "./index.ts",
