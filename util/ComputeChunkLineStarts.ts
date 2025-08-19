@@ -1,8 +1,5 @@
 /**
  * Computes the starting line numbers for each chunk in the original text
- * @param text The original full text
- * @param chunks Array of text chunks
- * @returns Array of line numbers corresponding to the start of each chunk
  */
 export function computeChunkLineStarts(text: string, chunks: string[]): number[] {
   let lineOffsets: number[] = [0];

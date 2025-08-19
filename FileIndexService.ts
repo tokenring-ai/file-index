@@ -23,8 +23,6 @@ export default class FileIndexService extends Service {
 
   /**
    * Full-text search through file chunks.
-   * @param _query
-   * @param _limit
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async fullTextSearch(_query: string, _limit: number = 10): Promise<any[]> {
@@ -41,7 +39,8 @@ export default class FileIndexService extends Service {
     );
   }
 
-  async waitReady() {}
+  async waitReady() {
+  }
 
   setCurrentFile(filePath: string) {
     this.currentFile = filePath;

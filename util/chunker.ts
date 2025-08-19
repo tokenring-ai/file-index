@@ -15,9 +15,6 @@ type SentenceItem = string | { text: string; [key: string]: any };
 
 /**
  * Chunks text into segments based on token count with optional overlap
- * @param text The text to chunk
- * @param options Configuration options for chunking
- * @returns Array of text chunks
  */
 export function chunkText(
   text: string,

@@ -1,5 +1,5 @@
 import fs from "fs";
-import Parser, { SyntaxNode } from "tree-sitter";
+import Parser, {SyntaxNode} from "tree-sitter";
 import JavaScript from "tree-sitter-javascript";
 
 /**

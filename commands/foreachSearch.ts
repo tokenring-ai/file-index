@@ -45,52 +45,49 @@ export async function execute(remainder: string, registry: Registry) {
     return;
   }
 
-  try {
-    // Wait for the file index to be ready
-    await (fileIndexService as any).waitReady?.();
 
-    chatService.systemLine(
-      `Searching for: "${query}" and running command: "${command}" on each file...`,
-    );
+  // Wait for the file index to be ready
+  await (fileIndexService as any).waitReady?.();
 
-    // Get search results
-    const results = await fileIndexService.search(query);
+  chatService.systemLine(
+    `Searching for: "${query}" and running command: "${command}" on each file...`,
+  );
 
-    if (results.length === 0) {
-      chatService.systemLine("No results found.");
-      return;
-    }
+  // Get search results
+  const results = await fileIndexService.search(query);
 
-    chatService.systemLine(
-      `Found ${results.length} result(s). Processing each file...`,
-    );
+  if (results.length === 0) {
+    chatService.systemLine("No results found.");
+    return;
+  }
 
-    // Process each result
-    for (const result of results) {
-      const relativePath = (result.path as string)
-        .replace(fileIndexService.baseDirectory, "")
-        .replace(/^[/\\]/, "");
+  chatService.systemLine(
+    `Found ${results.length} result(s). Processing each file...`,
+  );
 
-      chatService.systemLine(`\nProcessing file: ${relativePath}`);
+  // Process each result
+  for (const result of results) {
+    const relativePath = (result.path as string)
+      .replace(fileIndexService.baseDirectory, "")
+      .replace(/^[/\\]/, "");
 
-      // Set the current file context
-      fileIndexService.setCurrentFile(relativePath);
+    chatService.systemLine(`\nProcessing file: ${relativePath}`);
 
-      // Run the command using the shared runCommand helper
-      const match = command.match(/^\/?(\S+)(?:\s+(.*))?$/);
-      const commandName = match?.[1] ?? "help";
-      const remainder = match?.[2] ?? "";
-      await runCommand(commandName, remainder, registry);
+    // Set the current file context
+    fileIndexService.setCurrentFile(relativePath);
 
-      // Clear the current file context
-      fileIndexService.clearCurrentFile();
-    }
-  } catch (error: any) {
-    chatService.errorLine(`Error during foreachSearch: ${error.message}`);
-    console.error("ForeachSearch command error:", error);
+    // Run the command using the shared runCommand helper
+    const match = command.match(/^\/?(\S+)(?:\s+(.*))?$/);
+    const commandName = match?.[1] ?? "help";
+    const remainder = match?.[2] ?? "";
+    await runCommand(commandName, remainder, registry);
+
+    // Clear the current file context
+    fileIndexService.clearCurrentFile();
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function help() {
   return [
     "Usage: /foreachSearch <search-query> -- <command>",

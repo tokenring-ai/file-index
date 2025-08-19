@@ -59,6 +59,7 @@ export async function execute(remainder: string, registry: Registry) {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export function help() {
   return ["/search <query> - Search for text across files in the project."];
 }

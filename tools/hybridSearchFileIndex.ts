@@ -19,7 +19,7 @@ interface HybridSearchResult {
  *
  * Combines: (1) embedding similarity (2) full-text search (3) token overlap
  */
-export async function execute (
+export async function execute(
   {
     query,
     topK = 10,
@@ -39,7 +39,7 @@ export async function execute (
   const filesystem = registry.requireFirstServiceByType(FileSystemService);
 
   const fileIndex = registry.requireFirstServiceByType(FileIndexService);
-  if (! query) {
+  if (!query) {
     throw new Error(`[${name}] Missing query parameter`);
   }
 
@@ -98,7 +98,7 @@ export async function execute (
       (1 - textWeight - fullTextWeight) * hit.embScore +
       textWeight * hit.textScore +
       fullTextWeight * normalizedFullText;
-    return { ...hit, hybridScore };
+    return {...hit, hybridScore};
   });
 
   // Sort by hybrid score
@@ -107,7 +107,7 @@ export async function execute (
   // Deduplicate and merge overlapping/adjacent chunks (per file)
   const byFile: Record<string, any[]> = {};
   for (const hit of sorted) {
-    const { path, chunk_index } = hit;
+    const {path, chunk_index} = hit;
     if (!byFile[path]) byFile[path] = [];
     byFile[path].push(hit);
   }
@@ -122,17 +122,17 @@ export async function execute (
     let last: number | null = null;
     for (const idx of ranges) {
       if (last !== null && idx > last + mergeRadius) {
-        mergedBlocks.push({ path, indices: [...group] });
+        mergedBlocks.push({path, indices: [...group]});
         group = [];
       }
       group.push(idx);
       last = idx;
     }
-    if (group.length) mergedBlocks.push({ path, indices: group });
+    if (group.length) mergedBlocks.push({path, indices: group});
   }
 
   // For each block, get the best scoring chunk and concatenate contents
-  const results = mergedBlocks.map(({ path, indices }) => {
+  const results = mergedBlocks.map(({path, indices}) => {
     const blockChunks = indices
       .map((idx) => sorted.find((h: any) => h.path === path && h.chunk_index === idx))
       .filter(Boolean) as any[];
@@ -165,7 +165,7 @@ export async function execute (
 export const description =
   "Hybrid semantic+full-text+keyword search with merging/deduplication. Returns merged relevant code/text blocks.";
 
-export const parameters = z.object({
+export const inputSchema = z.object({
   query: z
     .string()
     .describe(

@@ -1,6 +1,6 @@
 import ChatService from "@token-ring/chat/ChatService";
-import { Registry } from "@token-ring/registry";
-import { z } from "zod";
+import {Registry} from "@token-ring/registry";
+import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
 /**
@@ -9,7 +9,7 @@ import FileIndexService from "../FileIndexService.ts";
 export const name = "file-index/searchFileIndex";
 
 export async function execute(
-  { query, k = 5 }: { query?: string; k?: number },
+  {query, k = 5}: { query?: string; k?: number },
   registry: Registry,
 ): Promise<any[]> {
   const chatService = registry.requireFirstServiceByType(ChatService);
@@ -25,7 +25,7 @@ export async function execute(
   chatService.systemLine(
     `[${name}] Found ${hits.length} matching chunks for query: ${query}\n`,
   );
-  return hits.map(({ path, chunk_index, content, distance }: any) => ({
+  return hits.map(({path, chunk_index, content, distance}: any) => ({
     path,
     chunk_index,
     content,
@@ -36,7 +36,7 @@ export async function execute(
 export const description =
   "Semantic search for file/document code/text chunks using the MariaDB vector database.";
 
-export const parameters = z.object({
+export const inputSchema = z.object({
   query: z
     .string()
     .describe(

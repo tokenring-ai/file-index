@@ -1,3 +1,4 @@
+import {ChatService} from "@token-ring/chat";
 import {Registry} from "@token-ring/registry";
 import fs from "fs-extra";
 import path from "path";
@@ -12,9 +13,11 @@ export default class StringSearchFileIndexService extends FileIndexService {
   fileQueue: Set<string> = new Set();
 
   initializing: Promise<void> | null = null;
+  registry: Registry | undefined;
   private timer?: NodeJS.Timeout;
 
   async start(registry: Registry) {
+    this.registry = registry;
     this.initializing = this.lazyInit(registry);
   }
 
@@ -32,8 +35,6 @@ export default class StringSearchFileIndexService extends FileIndexService {
 
   /**
    * Called when a file is changed - overrides parent method
-   * @param {string} type - Type of change ('add', 'change', 'unlink')
-   * @param {string} filePath - Absolute path to the file
    */
   onFileChanged(type: string, filePath: string) {
     if (type === "unlink") {
@@ -54,7 +55,8 @@ export default class StringSearchFileIndexService extends FileIndexService {
 
   async waitReady() {
     if (this.initializing != null) {
-      console.log("Waiting for database to finish initializing...");
+      const chatService = this.registry?.requireFirstServiceByType(ChatService);
+      chatService?.systemLine(`[${this.name}] Waiting for database to finish initializing...`);
       return this.initializing;
     }
   }
@@ -63,64 +65,53 @@ export default class StringSearchFileIndexService extends FileIndexService {
    * Process a single file into the database.
    */
   async processFiles() {
-    try {
-      const files = Array.from(this.fileQueue.keys());
+    const files = Array.from(this.fileQueue.keys());
 
-      const parallelTasks = 10;
-      const promises: Promise<void>[] = [];
-      for (let i = 0; i < parallelTasks; i++) {
-        promises[i] = (async (files: string[], i: number) => {
-          for (; i < files.length; i += parallelTasks) {
-            //console.log({i , parallelTasks});
-            const relPath = files[i];
+    const parallelTasks = 10;
+    const promises: Promise<void>[] = [];
+    for (let i = 0; i < parallelTasks; i++) {
+      promises[i] = (async (files: string[], i: number) => {
+        for (; i < files.length; i += parallelTasks) {
+          const relPath = files[i];
 
-            this.fileQueue.delete(relPath);
-            try {
-              await this.processFile(relPath);
-            } catch (err) {
-              console.error(`Error in processFile: ${relPath}`, err);
-            }
+          this.fileQueue.delete(relPath);
+          try {
+            await this.processFile(relPath);
+          } catch (err) {
+            // Ignore errors for now
           }
-        })(files, i);
-      }
-
-      await Promise.all(promises);
-    } catch (err) {
-      console.error("Error in processFiles:", err);
+        }
+      })(files, i);
     }
+
+    await Promise.all(promises);
   }
 
   /**
    * Process a single file into memory
-   * @param {string} filePath - Path to the file
    */
   async processFile(filePath: string) {
-    try {
-      const resolvedPath = path.resolve(this.baseDirectory, filePath);
+    const resolvedPath = path.resolve(this.baseDirectory, filePath);
 
-      // Check if file exists
-      if (!(await fs.exists(resolvedPath))) {
-        this.fileContents.delete(resolvedPath);
-        return;
-      }
-
-      const content = await fs.readFile(resolvedPath, "utf8");
-      const chunks = this._chunkContent(content);
-
-      // Store in memory
-      this.fileContents.set(resolvedPath, {
-        content,
-        chunks,
-        mtime: (await fs.stat(resolvedPath)).mtimeMs,
-      });
-    } catch (err) {
-      console.error(`Error processing file ${filePath}:`, err);
+    // Check if file exists
+    if (!(await fs.exists(resolvedPath))) {
+      this.fileContents.delete(resolvedPath);
+      return;
     }
+
+    const content = await fs.readFile(resolvedPath, "utf8");
+    const chunks = this._chunkContent(content);
+
+    // Store in memory
+    this.fileContents.set(resolvedPath, {
+      content,
+      chunks,
+      mtime: (await fs.stat(resolvedPath)).mtimeMs,
+    });
   }
 
   /**
    * Split content into manageable chunks.
-   * @param {string} content - File content
    * @returns {string[]} - Array of text chunks
    * @private
    */
@@ -155,7 +146,7 @@ export default class StringSearchFileIndexService extends FileIndexService {
   async fullTextSearch(query: string, limit: number = 10) {
     await this.waitReady();
 
-    if (!query || false || query.trim() === "") {
+    if (!query || query.trim() === "") {
       return [] as any[];
     }
 
