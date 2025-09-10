@@ -1,5 +1,4 @@
-import ChatService from "@token-ring/chat/ChatService";
-import type {Registry} from "@token-ring/registry";
+import Agent from "@tokenring-ai/agent/Agent";
 import FileIndexService from "../FileIndexService.ts";
 
 /**
@@ -9,35 +8,34 @@ import FileIndexService from "../FileIndexService.ts";
 export const description =
   "/search <query> - Search for text across files in the project.";
 
-export async function execute(remainder: string, registry: Registry) {
-  const chatService = registry.requireFirstServiceByType(ChatService);
+export async function execute(remainder: string, agent: Agent) {
   const fileIndexService: FileIndexService | undefined =
-    registry.requireFirstServiceByType(FileIndexService);
+    agent.requireFirstServiceByType(FileIndexService);
 
   if (!remainder || !remainder.trim()) {
-    chatService.errorLine("Usage: /search <query>");
+    agent.errorLine("Usage: /search <query>");
     return;
   }
 
   try {
     // Wait for the file index to be ready if it provides a waitReady method
-    await fileIndexService.waitReady();
+    await fileIndexService.waitReady(agent);
 
     // Default limit to 10 results
     const limit = 10;
     const query = remainder.trim();
 
-    chatService.systemLine(`Searching for: "${query}"...`);
+    agent.infoLine(`Searching for: "${query}"...`);
 
     // Use the search method from StringSearchFileIndexService
-    const results = await fileIndexService.search(query, limit);
+    const results = await fileIndexService.search(query, limit, agent);
 
     if (results.length === 0) {
-      chatService.systemLine("No results found.");
+      agent.infoLine("No results found.");
       return;
     }
 
-    chatService.systemLine(`Found ${results.length} result(s):`);
+    agent.infoLine(`Found ${results.length} result(s):`);
 
     // Display each result
     for (const result of results) {
@@ -46,15 +44,15 @@ export async function execute(remainder: string, registry: Registry) {
         .replace(/^[/\\]/, "");
 
       // Format the output to show the file path and the matching content
-      chatService.systemLine(`📄 ${relativePath}:`);
+      agent.infoLine(`📄 ${relativePath}:`);
 
       // Display the content with some context
       const content = (result.content as string).trim();
-      chatService.out(content);
-      chatService.out("\n");
+      agent.chatOutput(content);
+      agent.chatOutput("\n");
     }
   } catch (error: any) {
-    chatService.errorLine(`Error during search: ${error.message}`);
+    agent.errorLine(`Error during search: ${error.message}`);
     console.error("Search command error:", error);
   }
 }

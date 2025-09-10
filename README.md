@@ -1,7 +1,7 @@
 ```markdown
-# @token-ring/file-index
+# @tokenring-ai/file-index
 
-This module, `@token-ring/file-index`, provides foundational services for file indexing and search within the Token Ring
+This module, `@tokenring-ai/file-index`, provides foundational services for file indexing and search within the Token Ring
 project. It offers an abstract base class crucial for developing different file indexing strategies and includes a
 simple, concrete implementation for basic in-memory keyword-based search.
 
@@ -13,7 +13,7 @@ please replace these placeholders with the actual package names).
 
 ## Core Components Exported by This Module
 
-The primary exports of `@token-ring/file-index` are:
+The primary exports of `@tokenring-ai/file-index` are:
 
 - `FileIndexService`: An abstract base class for file indexing services.
 - `StringSearchFileIndexService`: A concrete implementation for basic keyword search.
@@ -70,8 +70,8 @@ root directory of the files to be indexed.
 
 ```javascript
 // Example: Registering and configuring StringSearchFileIndexService
-import { StringSearchFileIndexService } from '@token-ring/file-index';
-import { TokenRingRegistry } from '@token-ring/registry'; // Assuming you use a registry
+import { StringSearchFileIndexService } from '@tokenring-ai/file-index';
+import { TokenRingRegistry } from '@tokenring-ai/registry'; // Assuming you use a registry
 
 const registry = new TokenRingRegistry();
 const stringSearchService = new StringSearchFileIndexService();
@@ -145,9 +145,9 @@ This module provides chat commands for interacting with a registered `FileIndexS
 For the `StringSearchFileIndexService` provided in this package, key direct dependencies include:
 
 - `fs-extra`: Used for file system operations.
-- It also relies on foundational packages like `@token-ring/registry`.
+- It also relies on foundational packages like `@tokenring-ai/registry`.
 
-The `package.json` for `@token-ring/file-index` also lists dependencies such as `tree-sitter`, `sqlite-vec`, and
+The `package.json` for `@tokenring-ai/file-index` also lists dependencies such as `tree-sitter`, `sqlite-vec`, and
 `chokidar`. These are **not directly utilized by `StringSearchFileIndexService`**. They are included to support the
 broader ecosystem of file indexing within the Token Ring project, particularly for advanced file indexing services
 provided by other packages (e.g., `[ADVANCED_INDEXER_PACKAGE_NAME_1]`, `[CODE_ANALYSIS_PACKAGE_NAME]`) which might build

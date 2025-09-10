@@ -1,6 +1,4 @@
-import ChatService from "@token-ring/chat/ChatService";
-import {runCommand} from "@token-ring/chat/runCommand";
-import type {Registry} from "@token-ring/registry";
+import Agent from "@tokenring-ai/agent/Agent";
 import FileIndexService from "../FileIndexService.ts";
 
 /**
@@ -10,15 +8,13 @@ import FileIndexService from "../FileIndexService.ts";
 export const description =
   "/foreachSearch <search-query> -- <command> - Search for text across files and run a command for each matching file";
 
-export async function execute(remainder: string, registry: Registry) {
-  const chatService = registry.requireFirstServiceByType(ChatService);
-  const fileIndexService: FileIndexService | undefined =
-    registry.requireFirstServiceByType(FileIndexService);
+export async function execute(remainder: string, agent: Agent) {
+  const fileIndexService = agent.requireFirstServiceByType(FileIndexService);
 
   // Check if we have a valid remainder
   if (!remainder || !remainder.trim()) {
     for (const line of help()) {
-      chatService.systemLine(line);
+      agent.infoLine(line);
     }
     return;
   }
@@ -26,11 +22,11 @@ export async function execute(remainder: string, registry: Registry) {
   // Split the remainder into query and command parts
   const parts = remainder.split(/\s+--\s+/);
   if (parts.length < 2) {
-    chatService.errorLine(
+    agent.errorLine(
       "Missing '--' separator between search query and command",
     );
     for (const line of help()) {
-      chatService.systemLine(line);
+      agent.infoLine(line);
     }
     return;
   }
@@ -39,7 +35,7 @@ export async function execute(remainder: string, registry: Registry) {
   const command = parts.slice(1).join(" -- ").trim();
 
   if (!fileIndexService) {
-    chatService.errorLine(
+    agent.errorLine(
       "FileIndexService not found. Please add it to your context configuration.",
     );
     return;
@@ -47,21 +43,21 @@ export async function execute(remainder: string, registry: Registry) {
 
 
   // Wait for the file index to be ready
-  await (fileIndexService as any).waitReady?.();
+  await fileIndexService.waitReady(agent);
 
-  chatService.systemLine(
+  agent.infoLine(
     `Searching for: "${query}" and running command: "${command}" on each file...`,
   );
 
   // Get search results
-  const results = await fileIndexService.search(query);
+  const results = await fileIndexService.search(query, undefined, agent);
 
   if (results.length === 0) {
-    chatService.systemLine("No results found.");
+    agent.infoLine("No results found.");
     return;
   }
 
-  chatService.systemLine(
+  agent.infoLine(
     `Found ${results.length} result(s). Processing each file...`,
   );
 
@@ -71,7 +67,7 @@ export async function execute(remainder: string, registry: Registry) {
       .replace(fileIndexService.baseDirectory, "")
       .replace(/^[/\\]/, "");
 
-    chatService.systemLine(`\nProcessing file: ${relativePath}`);
+    agent.infoLine(`\nProcessing file: ${relativePath}`);
 
     // Set the current file context
     fileIndexService.setCurrentFile(relativePath);
@@ -80,7 +76,7 @@ export async function execute(remainder: string, registry: Registry) {
     const match = command.match(/^\/?(\S+)(?:\s+(.*))?$/);
     const commandName = match?.[1] ?? "help";
     const remainder = match?.[2] ?? "";
-    await runCommand(commandName, remainder, registry);
+    await agent.runCommand(commandName, remainder);
 
     // Clear the current file context
     fileIndexService.clearCurrentFile();

@@ -1,9 +1,16 @@
-export {default as FileIndexService} from "./FileIndexService.ts";
-export {default as StringSearchFileIndexService} from "./StringSearchFileIndexService.ts";
-export * as chatCommands from "./chatCommands.ts";
-export * as tools from "./tools.ts";
+import {TokenRingPackage} from "@tokenring-ai/agent";
+import * as chatCommands from "./chatCommands.ts";
+import packageJSON from './package.json' with {type: 'json'};
+import * as tools from "./tools.ts";
 
-export const name = "@token-ring/file-index";
-export const description =
-  "Service that indexes files and provides a search interface.";
-export const version = "0.1.0";
+export {default as FileIndexService} from "./FileIndexService.ts";
+export {default as FileIndexProvider} from "./FileIndexProvider.ts";
+export {default as EphemeralFileIndexProvider} from "./EphemeralFileIndexProvider.ts";
+
+export const packageInfo: TokenRingPackage = {
+  name: packageJSON.name,
+  version: packageJSON.version,
+  description: packageJSON.description,
+  chatCommands,
+  tools
+};

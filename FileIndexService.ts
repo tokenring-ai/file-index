@@ -1,56 +1,44 @@
-import {type Registry, Service} from "@token-ring/registry";
+import Agent from "@tokenring-ai/agent/Agent";
+import {TokenRingService} from "@tokenring-ai/agent/types";
+import KeyedRegistryWithSingleSelection from "@tokenring-ai/utility/KeyedRegistryWithSingleSelection";
+import FileIndexProvider, {SearchResult} from "./FileIndexProvider.ts";
 
-export default class FileIndexService extends Service {
+export default class FileIndexService implements TokenRingService {
   name = "FileIndexService";
   description = "Provides FileIndex functionality";
 
-  // Base directory for resolving relative file paths; default to CWD
-  public baseDirectory: string = process.cwd();
+  private fileIndexProviderRegistry = new KeyedRegistryWithSingleSelection<FileIndexProvider>();
 
-  private currentFile: string | null = null;
+  registerFileIndexProvider = this.fileIndexProviderRegistry.register;
+  getActiveFileIndexProviderName = this.fileIndexProviderRegistry.getActiveItemName;
+  setActiveFileIndexProviderName = this.fileIndexProviderRegistry.setEnabledItem;
+  getAvailableFileIndexProviders = this.fileIndexProviderRegistry.getAllItemNames;
 
-  /** Optional close hook so subclasses can call super.close() safely */
-  async close(_registry?: any): Promise<void> {
+  async fullTextSearch(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]> {
+    return this.fileIndexProviderRegistry.getActiveItem().fullTextSearch(query, limit);
   }
 
-  /** Reports the status of the service. */
-  async status(_registry: Registry): Promise<{ active: boolean; service: string }> {
-    return {
-      active: true,
-      service: "FileIndexService",
-    };
+  async search(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]> {
+    return this.fileIndexProviderRegistry.getActiveItem().search(query, limit);
   }
 
-  /**
-   * Full-text search through file chunks.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fullTextSearch(_query: string, _limit: number = 10): Promise<any[]> {
-    throw new Error(
-      `The ${import.meta.filename} class is abstract and cannot be used directly. Please use a subclass instead.`,
-    );
-  }
-
-  /** Similarity search. */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async search(_query: string, _limit: number = 10): Promise<any[]> {
-    throw new Error(
-      `The ${import.meta.filename} class is abstract and cannot be used directly. Please use a subclass instead.`,
-    );
-  }
-
-  async waitReady() {
+  async waitReady(agent: Agent): Promise<void> {
+    return this.fileIndexProviderRegistry.getActiveItem().waitReady();
   }
 
   setCurrentFile(filePath: string) {
-    this.currentFile = filePath;
+    this.fileIndexProviderRegistry.getActiveItem().setCurrentFile(filePath);
   }
 
   clearCurrentFile() {
-    this.currentFile = null;
+    this.fileIndexProviderRegistry.getActiveItem().clearCurrentFile();
   }
 
   getCurrentFile() {
-    return this.currentFile;
+    return this.fileIndexProviderRegistry.getActiveItem().getCurrentFile();
+  }
+
+  async close(): Promise<void> {
+    return this.fileIndexProviderRegistry.getActiveItem().close();
   }
 }

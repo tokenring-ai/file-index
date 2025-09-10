@@ -1,6 +1,5 @@
-import ChatService from "@token-ring/chat/ChatService";
-import FileSystemService from "@token-ring/filesystem/FileSystemService";
-import {Registry} from "@token-ring/registry";
+import Agent from "@tokenring-ai/agent/Agent";
+import FileSystemService from "@tokenring-ai/filesystem/FileSystemService";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
@@ -33,20 +32,18 @@ export async function execute(
     fullTextWeight?: number;
     mergeRadius?: number;
   },
-  registry: Registry,
+  agent: Agent,
 ): Promise<HybridSearchResult[]> {
-  const chatService = registry.requireFirstServiceByType(ChatService);
-  const filesystem = registry.requireFirstServiceByType(FileSystemService);
-
-  const fileIndex = registry.requireFirstServiceByType(FileIndexService);
+  const filesystem = agent.requireFirstServiceByType(FileSystemService);
+  const fileIndex = agent.requireFirstServiceByType(FileIndexService);
   if (!query) {
     throw new Error(`[${name}] Missing query parameter`);
   }
 
   // Get results from both search methods
   const [embeddingHits, fullTextHits] = await Promise.all([
-    fileIndex.search(query, topK * 4),
-    fileIndex.fullTextSearch(query, topK * 4),
+    fileIndex.search(query, topK * 4, agent),
+    fileIndex.fullTextSearch(query, topK * 4, agent),
   ]);
 
   // Token overlap (BM25-ish)
@@ -156,7 +153,7 @@ export async function execute(
     .sort((a, b) => b.hybridScore - a.hybridScore)
     .slice(0, topK);
 
-  chatService.systemLine(
+  agent.infoLine(
     `[${name}] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`,
   );
   return finalResults;

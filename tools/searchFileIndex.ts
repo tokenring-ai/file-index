@@ -1,5 +1,4 @@
-import ChatService from "@token-ring/chat/ChatService";
-import {Registry} from "@token-ring/registry";
+import Agent from "@tokenring-ai/agent/Agent";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
@@ -10,19 +9,18 @@ export const name = "file-index/searchFileIndex";
 
 export async function execute(
   {query, k = 5}: { query?: string; k?: number },
-  registry: Registry,
+  agent: Agent,
 ): Promise<any[]> {
-  const chatService = registry.requireFirstServiceByType(ChatService);
 
-  const fileIndex = registry.requireFirstServiceByType(FileIndexService);
+  const fileIndex = agent.requireFirstServiceByType(FileIndexService);
 
   if (!query) {
     throw new Error(`[${name}] Missing query parameter`);
   }
 
-  const hits = await fileIndex.search(query, k);
+  const hits = await fileIndex.search(query, k, agent);
   // Each hit has: {path, chunk_index, content, distance, ...}
-  chatService.systemLine(
+  agent.infoLine(
     `[${name}] Found ${hits.length} matching chunks for query: ${query}\n`,
   );
   return hits.map(({path, chunk_index, content, distance}: any) => ({
