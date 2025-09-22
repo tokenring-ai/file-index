@@ -12,7 +12,7 @@ export async function execute(
   agent: Agent,
 ): Promise<any[]> {
 
-  const fileIndex = agent.requireFirstServiceByType(FileIndexService);
+  const fileIndex = agent.requireServiceByType(FileIndexService);
 
   if (!query) {
     throw new Error(`[${name}] Missing query parameter`);

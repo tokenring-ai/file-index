@@ -34,8 +34,8 @@ export async function execute(
   },
   agent: Agent,
 ): Promise<HybridSearchResult[]> {
-  const filesystem = agent.requireFirstServiceByType(FileSystemService);
-  const fileIndex = agent.requireFirstServiceByType(FileIndexService);
+  const filesystem = agent.requireServiceByType(FileSystemService);
+  const fileIndex = agent.requireServiceByType(FileIndexService);
   if (!query) {
     throw new Error(`[${name}] Missing query parameter`);
   }

@@ -10,7 +10,7 @@ export const description =
 
 export async function execute(remainder: string, agent: Agent) {
   const fileIndexService: FileIndexService | undefined =
-    agent.requireFirstServiceByType(FileIndexService);
+    agent.requireServiceByType(FileIndexService);
 
   if (!remainder || !remainder.trim()) {
     agent.errorLine("Usage: /search <query>");
