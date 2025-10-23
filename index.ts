@@ -10,14 +10,14 @@ export const FileIndexConfigSchema = z.object({
   providers: z.record(z.string(), z.any())
 }).optional();
 
-export const packageInfo: TokenRingPackage = {
+export default {
   name: packageJSON.name,
   version: packageJSON.version,
   description: packageJSON.description,
   install(agentTeam: AgentTeam) {
     const config = agentTeam.getConfigSlice('fileIndex', FileIndexConfigSchema);
     if (config) {
-      agentTeam.addTools(packageInfo, tools);
+      agentTeam.addTools(packageJSON.name, tools);
       agentTeam.addChatCommands(chatCommands);
       const fileIndexService = new FileIndexService();
       agentTeam.addServices(fileIndexService);
@@ -34,7 +34,7 @@ export const packageInfo: TokenRingPackage = {
       }
     }
   }
-};
+} as TokenRingPackage;
 
 export {default as FileIndexService} from "./FileIndexService.ts";
 export {default as FileIndexProvider} from "./FileIndexProvider.ts";
