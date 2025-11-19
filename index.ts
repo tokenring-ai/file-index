@@ -1,5 +1,5 @@
 import {AgentCommandService, AgentTeam, TokenRingPackage} from "@tokenring-ai/agent";
-import {AIService} from "@tokenring-ai/ai-client";
+import {ChatService} from "@tokenring-ai/chat";
 import {z} from "zod";
 import * as chatCommands from "./chatCommands.ts";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
@@ -18,8 +18,8 @@ export default {
   install(agentTeam: AgentTeam) {
     const config = agentTeam.getConfigSlice('fileIndex', FileIndexConfigSchema);
     if (config) {
-      agentTeam.waitForService(AIService, aiService =>
-        aiService.addTools(packageJSON.name, tools)
+      agentTeam.waitForService(ChatService, chatService =>
+        chatService.addTools(packageJSON.name, tools)
       );
       agentTeam.waitForService(AgentCommandService, agentCommandService =>
         agentCommandService.addAgentCommands(chatCommands)

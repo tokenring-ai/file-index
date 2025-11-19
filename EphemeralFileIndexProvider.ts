@@ -25,12 +25,6 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     this.initializing = this.lazyInit();
   }
 
-  private async lazyInit() {
-    this.scheduleNextProcessing();
-    await this.processFiles();
-    this.scheduleNextProcessing();
-  }
-
   onFileChanged(type: string, filePath: string) {
     if (type === "unlink") {
       this.fileQueue.delete(filePath);
@@ -40,40 +34,10 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     }
   }
 
-  private scheduleNextProcessing() {
-    this.timer = setTimeout(async () => {
-      await this.processFiles();
-      this.scheduleNextProcessing();
-    }, 250);
-    this.timer.unref();
-  }
-
   async waitReady(): Promise<void> {
     if (this.initializing != null) {
       return this.initializing;
     }
-  }
-
-  private async processFiles() {
-    const files = Array.from(this.fileQueue.keys());
-    const parallelTasks = 10;
-    const promises: Promise<void>[] = [];
-    
-    for (let i = 0; i < parallelTasks; i++) {
-      promises[i] = (async (files: string[], i: number) => {
-        for (; i < files.length; i += parallelTasks) {
-          const relPath = files[i];
-          this.fileQueue.delete(relPath);
-          try {
-            await this.processFile(relPath);
-          } catch (err) {
-            // Ignore errors for now
-          }
-        }
-      })(files, i);
-    }
-
-    await Promise.all(promises);
   }
 
   async processFile(filePath: string) {
@@ -92,27 +56,6 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
       chunks,
       mtime: (await fs.stat(resolvedPath)).mtimeMs,
     });
-  }
-
-  private chunkContent(content: string): string[] {
-    const lines = content.split("\n");
-    const chunks: string[] = [];
-    let currentChunk = "";
-
-    for (const line of lines) {
-      if (currentChunk.length + line.length > 1000) {
-        chunks.push(currentChunk);
-        currentChunk = line;
-      } else {
-        currentChunk += (currentChunk ? "\n" : "") + line;
-      }
-    }
-
-    if (currentChunk) {
-      chunks.push(currentChunk);
-    }
-
-    return chunks;
   }
 
   async fullTextSearch(query: string, limit: number = 10): Promise<SearchResult[]> {
@@ -180,5 +123,62 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     }
     this.fileContents.clear();
     this.fileQueue.clear();
+  }
+
+  private async lazyInit() {
+    this.scheduleNextProcessing();
+    await this.processFiles();
+    this.scheduleNextProcessing();
+  }
+
+  private scheduleNextProcessing() {
+    this.timer = setTimeout(async () => {
+      await this.processFiles();
+      this.scheduleNextProcessing();
+    }, 250);
+    this.timer.unref();
+  }
+
+  private async processFiles() {
+    const files = Array.from(this.fileQueue.keys());
+    const parallelTasks = 10;
+    const promises: Promise<void>[] = [];
+
+    for (let i = 0; i < parallelTasks; i++) {
+      promises[i] = (async (files: string[], i: number) => {
+        for (; i < files.length; i += parallelTasks) {
+          const relPath = files[i];
+          this.fileQueue.delete(relPath);
+          try {
+            await this.processFile(relPath);
+          } catch (err) {
+            // Ignore errors for now
+          }
+        }
+      })(files, i);
+    }
+
+    await Promise.all(promises);
+  }
+
+  private chunkContent(content: string): string[] {
+    const lines = content.split("\n");
+    const chunks: string[] = [];
+    let currentChunk = "";
+
+    for (const line of lines) {
+      if (currentChunk.length + line.length > 1000) {
+        chunks.push(currentChunk);
+        currentChunk = line;
+      } else {
+        currentChunk += (currentChunk ? "\n" : "") + line;
+      }
+    }
+
+    if (currentChunk) {
+      chunks.push(currentChunk);
+    }
+
+    return chunks;
   }
 }

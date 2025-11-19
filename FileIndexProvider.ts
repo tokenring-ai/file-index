@@ -13,16 +13,22 @@ export interface SearchResult {
 export default abstract class FileIndexProvider {
   // Core search methods
   abstract search(query: string, limit?: number): Promise<SearchResult[]>;
+
   abstract fullTextSearch(query: string, limit?: number): Promise<SearchResult[]>;
 
   // Lifecycle methods
   abstract waitReady(): Promise<void>;
+
   abstract processFile(filePath: string): Promise<void>;
+
   abstract onFileChanged(type: string, filePath: string): void;
+
   abstract close(): Promise<void>;
 
   // Current file context
   abstract setCurrentFile(filePath: string): void;
+
   abstract clearCurrentFile(): void;
+
   abstract getCurrentFile(): string | null;
 }
