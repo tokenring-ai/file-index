@@ -1,14 +1,14 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import {TokenRingToolDefinition} from "@tokenring-ai/chat/types";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
 /**
  * Searches the file index for semantically similar chunks to the query.
  */
-export const name = "file-index/searchFileIndex";
-
-export async function execute(
-  {query, k = 5}: { query?: string; k?: number },
+const name = "file-index/searchFileIndex";
+async function execute(
+  {query, k = 5}: z.infer<typeof inputSchema>,
   agent: Agent,
 ): Promise<any[]> {
 
@@ -31,10 +31,10 @@ export async function execute(
   }));
 }
 
-export const description =
+const description =
   "Semantic search for file/document code/text chunks using the MariaDB vector database.";
 
-export const inputSchema = z.object({
+const inputSchema = z.object({
   query: z
     .string()
     .describe(
@@ -46,3 +46,7 @@ export const inputSchema = z.object({
     .default(5)
     .describe("Number of top results to return (default 5)"),
 });
+
+export default {
+  name, description, inputSchema, execute,
+} as TokenRingToolDefinition<typeof inputSchema>;

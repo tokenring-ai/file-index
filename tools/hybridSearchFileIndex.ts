@@ -1,9 +1,10 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import {TokenRingToolDefinition} from "@tokenring-ai/chat/types";
 import FileSystemService from "@tokenring-ai/filesystem/FileSystemService";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
-export const name = "file-index/hybridSearchFileIndex";
+const name = "file-index/hybridSearchFileIndex";
 
 interface HybridSearchResult {
   path: string;
@@ -18,20 +19,14 @@ interface HybridSearchResult {
  *
  * Combines: (1) embedding similarity (2) full-text search (3) token overlap
  */
-export async function execute(
+async function execute(
   {
     query,
     topK = 10,
     textWeight = 0.3,
     fullTextWeight = 0.3,
     mergeRadius = 1,
-  }: {
-    query?: string;
-    topK?: number;
-    textWeight?: number;
-    fullTextWeight?: number;
-    mergeRadius?: number;
-  },
+  }: z.infer<typeof inputSchema>,
   agent: Agent,
 ): Promise<HybridSearchResult[]> {
   const filesystem = agent.requireServiceByType(FileSystemService);
@@ -159,10 +154,10 @@ export async function execute(
   return finalResults;
 }
 
-export const description =
+const description =
   "Hybrid semantic+full-text+keyword search with merging/deduplication. Returns merged relevant code/text blocks.";
 
-export const inputSchema = z.object({
+const inputSchema = z.object({
   query: z
     .string()
     .describe(
@@ -189,3 +184,7 @@ export const inputSchema = z.object({
       "How close (in chunk indices) hits must be to merge into a single region (default: 1)",
     ),
 });
+
+export default {
+  name, description, inputSchema, execute,
+} as TokenRingToolDefinition<typeof inputSchema>;

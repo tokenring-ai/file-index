@@ -1,5 +1,7 @@
-import {AgentCommandService, AgentTeam, TokenRingPackage} from "@tokenring-ai/agent";
+import TokenRingApp from "@tokenring-ai/app"; 
+import {AgentCommandService} from "@tokenring-ai/agent";
 import {ChatService} from "@tokenring-ai/chat";
+import {TokenRingPlugin} from "@tokenring-ai/app";
 import {z} from "zod";
 import * as chatCommands from "./chatCommands.ts";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
@@ -15,17 +17,17 @@ export default {
   name: packageJSON.name,
   version: packageJSON.version,
   description: packageJSON.description,
-  install(agentTeam: AgentTeam) {
-    const config = agentTeam.getConfigSlice('fileIndex', FileIndexConfigSchema);
+  install(app: TokenRingApp) {
+    const config = app.getConfigSlice('fileIndex', FileIndexConfigSchema);
     if (config) {
-      agentTeam.waitForService(ChatService, chatService =>
+      app.waitForService(ChatService, chatService =>
         chatService.addTools(packageJSON.name, tools)
       );
-      agentTeam.waitForService(AgentCommandService, agentCommandService =>
+      app.waitForService(AgentCommandService, agentCommandService =>
         agentCommandService.addAgentCommands(chatCommands)
       );
       const fileIndexService = new FileIndexService();
-      agentTeam.addServices(fileIndexService);
+      app.addServices(fileIndexService);
 
       if (config.providers) {
         for (const name in config.providers) {
@@ -39,7 +41,7 @@ export default {
       }
     }
   }
-} as TokenRingPackage;
+} as TokenRingPlugin;
 
 export {default as FileIndexService} from "./FileIndexService.ts";
 export {default as FileIndexProvider} from "./FileIndexProvider.ts";

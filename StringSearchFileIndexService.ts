@@ -1,6 +1,7 @@
-import {AgentTeam} from "@tokenring-ai/agent";
+import TokenRingApp from "@tokenring-ai/app";
 import Agent from "@tokenring-ai/agent/Agent";
-import {TokenRingService} from "@tokenring-ai/agent/types";
+
+import {TokenRingService} from "@tokenring-ai/app/types";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
 
 export default class StringSearchFileIndexService implements TokenRingService {
@@ -8,14 +9,14 @@ export default class StringSearchFileIndexService implements TokenRingService {
   description = "Provides StringSearchFileIndex functionality";
 
   private provider: EphemeralFileIndexProvider;
-  private agentTeam!: AgentTeam;
+  private app!: TokenRingApp;
 
-  constructor(baseDirectory?: string) {
+  constructor(app: TokenRingApp, baseDirectory?: string) {
+    this.app = app;
     this.provider = new EphemeralFileIndexProvider(baseDirectory);
   }
 
-  async start(agentTeam: AgentTeam) {
-    this.agentTeam = agentTeam;
+  async start() {
     await this.provider.start();
   }
 

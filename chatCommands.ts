@@ -1,1 +1,1 @@
-export * as search from "./commands/search.ts";
+export {default as search} from "./commands/search.ts";

@@ -1,14 +1,15 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import {TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import FileIndexService from "../FileIndexService.ts";
 
 /**
  * /search <query> - Search for text across files in the project
  */
 
-export const description =
+const description =
   "/search <query> - Search for text across files in the project.";
 
-export async function execute(remainder: string, agent: Agent) {
+async function execute(remainder: string, agent: Agent) {
   const fileIndexService: FileIndexService | undefined =
     agent.requireServiceByType(FileIndexService);
 
@@ -52,3 +53,9 @@ export async function execute(remainder: string, agent: Agent) {
 export function help() {
   return ["/search <query> - Search for text across files in the project."];
 }
+
+export default {
+  description,
+  execute,
+  help,
+} as TokenRingAgentCommand
