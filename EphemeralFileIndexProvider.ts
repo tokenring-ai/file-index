@@ -3,7 +3,7 @@ import path from "path";
 import FileIndexProvider, {SearchResult} from "./FileIndexProvider.ts";
 
 export default class EphemeralFileIndexProvider extends FileIndexProvider {
-  private baseDirectory: string = process.cwd();
+  private readonly baseDirectory: string = process.cwd();
   private currentFile: string | null = null;
   private fileContents: Map<string, { content: string; chunks: string[]; mtime: number }> = new Map();
   private fileQueue: Set<string> = new Set();

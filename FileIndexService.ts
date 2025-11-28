@@ -23,7 +23,7 @@ export default class FileIndexService implements TokenRingService {
     return this.fileIndexProviderRegistry.getActiveItem().search(query, limit);
   }
 
-  async waitReady(agent: Agent): Promise<void> {
+  async waitReady(_agent: Agent): Promise<void> {
     return this.fileIndexProviderRegistry.getActiveItem().waitReady();
   }
 

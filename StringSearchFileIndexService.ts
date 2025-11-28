@@ -40,7 +40,7 @@ export default class StringSearchFileIndexService implements TokenRingService {
     return this.provider.fullTextSearch(query, limit);
   }
 
-  async search(query: string, limit: number = 10, agent: Agent) {
+  async search(query: string, limit: number = 10, _agent: Agent) {
     return this.provider.search(query, limit);
   }
 

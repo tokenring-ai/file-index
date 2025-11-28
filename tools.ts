@@ -1,3 +1,7 @@
-//export {default as searchFileIndex} from "./tools/searchFileIndex.ts";
+//import {default as searchFileIndex} from "./tools/searchFileIndex.ts";
 
-export {default as hybridSearchFileIndex} from "./tools/hybridSearchFileIndex.ts";
+import {default as hybridSearchFileIndex} from "./tools/hybridSearchFileIndex.ts";
+
+export default {
+  hybridSearchFileIndex,
+};

@@ -7,7 +7,7 @@ import FileIndexService from "../FileIndexService.ts";
  */
 
 const description =
-  "/search <query> - Search for text across files in the project.";
+  "/search - Search for text across files in the project.";
 
 async function execute(remainder: string, agent: Agent) {
   const fileIndexService: FileIndexService | undefined =
@@ -49,10 +49,36 @@ async function execute(remainder: string, agent: Agent) {
   }
 }
 
-// noinspection JSUnusedGlobalSymbols
-export function help() {
-  return ["/search <query> - Search for text across files in the project."];
-}
+const help: string = `# /search - Search for text across files in the project
+
+## Description
+
+Performs a full-text search across all indexed files in the project. Searches for the query string in file contents and returns matching chunks.
+
+## Usage
+
+/search <query>
+
+## Examples
+
+/search function getUser
+/search class Component
+/search import React
+/search database connection
+
+## Parameters
+
+- **<query>** - The text string to search for (required)
+
+## Features
+
+- Searches across all text files in the project
+- Returns up to 10 matching results by default
+- Shows file paths and matching content
+- Case-insensitive search
+- Real-time indexing of project files
+
+**Note:** The search index builds automatically as you work with files. Results may take a moment to appear after file changes.`;
 
 export default {
   description,
