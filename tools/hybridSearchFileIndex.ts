@@ -135,7 +135,7 @@ async function execute(
     const end = Math.max(...indices);
     // TODO: make this a relative path
     return {
-      path: filesystem.relativeOrAbsolutePathToRelativePath(path),
+      path,
       start,
       end,
       hybridScore,
