@@ -41,7 +41,7 @@ export default {
       }
     }
   }
-} as TokenRingPlugin;
+} satisfies TokenRingPlugin;
 
 export {default as FileIndexService} from "./FileIndexService.ts";
 export {default as FileIndexProvider} from "./FileIndexProvider.ts";
