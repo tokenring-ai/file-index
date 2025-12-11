@@ -1,35 +1,35 @@
 {
- "name": "@tokenring-ai/file-index",
- "description": "Service that add file contents or file names to the chat memory.",
- "version": "0.2.0",
- "dependencies": {
-  "@tokenring-ai/app": "0.2.0",
-  "@tokenring-ai/chat": "0.2.0",
-  "zod": "^4.1.13",
-  "@tokenring-ai/agent": "0.2.0",
-  "@tokenring-ai/filesystem": "0.2.0",
-  "@tokenring-ai/utility": "0.2.0",
-  "chokidar": "^5.0.0",
-  "commander": "^14.0.2",
-  "glob-gitignore": "^1.0.15",
-  "gpt-tokenizer": "^3.4.0",
-  "mysql2": "^3.15.3",
-  "sentencex": "^1.0.13",
-  "sqlite-vec": "0.1.7-alpha.2",
-  "tree-sitter": "^0.25.0",
-  "tree-sitter-javascript": "^0.25.0",
-  "fs-extra": "^11.3.2"
- },
- "devDependencies": {
-  "@types/fs-extra": "^11.0.4"
- },
- "exports": {
-  ".": "./index.ts",
-  "./*": "./*.ts"
- },
- "license": "MIT",
- "scripts": {
-  "eslint": "eslint --fix ./"
- },
- "type": "module"
+  "name": "@tokenring-ai/file-index",
+  "description": "Service that add file contents or file names to the chat memory.",
+  "version": "0.2.0",
+  "dependencies": {
+    "@tokenring-ai/app": "0.2.0",
+    "@tokenring-ai/chat": "0.2.0",
+    "zod": "^4.1.13",
+    "@tokenring-ai/agent": "0.2.0",
+    "@tokenring-ai/filesystem": "0.2.0",
+    "@tokenring-ai/utility": "0.2.0",
+    "chokidar": "^5.0.0",
+    "commander": "^14.0.2",
+    "glob-gitignore": "^1.0.15",
+    "gpt-tokenizer": "^3.4.0",
+    "mysql2": "^3.15.3",
+    "sentencex": "^1.0.13",
+    "sqlite-vec": "0.1.7-alpha.2",
+    "tree-sitter": "^0.25.0",
+    "tree-sitter-javascript": "^0.25.0",
+    "fs-extra": "^11.3.2"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts"
+  },
+  "license": "MIT",
+  "scripts": {
+    "eslint": "eslint --fix ./"
+  },
+  "type": "module"
 }
