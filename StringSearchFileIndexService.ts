@@ -16,7 +16,7 @@ export default class StringSearchFileIndexService implements TokenRingService {
     this.provider = new EphemeralFileIndexProvider(baseDirectory);
   }
 
-  async start() {
+  async run() {
     await this.provider.start();
   }
 
