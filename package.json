@@ -21,7 +21,9 @@
     "fs-extra": "^11.3.2"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4"
+    "@types/fs-extra": "^11.0.4",
+    "vitest": "catalog:",
+    "typescript": "catalog:"
   },
   "exports": {
     ".": "./index.ts",
@@ -29,7 +31,11 @@
   },
   "license": "MIT",
   "scripts": {
-    "eslint": "eslint --fix ./"
+    "eslint": "eslint --fix ./",
+    "test": "vitest run",
+    "build": "tsc --noEmit",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "type": "module"
 }
