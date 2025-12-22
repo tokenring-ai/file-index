@@ -6,7 +6,7 @@ import FileIndexService from "../FileIndexService.ts";
 /**
  * Searches the file index for semantically similar chunks to the query.
  */
-const name = "file-index/searchFileIndex";
+const name = "file-index_searchFileIndex";
 async function execute(
   {query, k = 5}: z.infer<typeof inputSchema>,
   agent: Agent,

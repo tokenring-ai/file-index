@@ -4,7 +4,7 @@ import FileSystemService from "@tokenring-ai/filesystem/FileSystemService";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
-const name = "file-index/hybridSearchFileIndex";
+const name = "file-index_hybridSearchFileIndex";
 
 interface HybridSearchResult {
   path: string;
