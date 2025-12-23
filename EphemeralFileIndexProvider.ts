@@ -17,10 +17,6 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     }
   }
 
-  getBaseDirectory(): string {
-    return this.baseDirectory;
-  }
-
   async start() {
     this.initializing = this.lazyInit();
   }

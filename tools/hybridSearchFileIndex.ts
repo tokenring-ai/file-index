@@ -29,7 +29,6 @@ async function execute(
   }: z.infer<typeof inputSchema>,
   agent: Agent,
 ): Promise<HybridSearchResult[]> {
-  const filesystem = agent.requireServiceByType(FileSystemService);
   const fileIndex = agent.requireServiceByType(FileIndexService);
   if (!query) {
     throw new Error(`[${name}] Missing query parameter`);
