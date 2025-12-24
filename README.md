@@ -4,22 +4,23 @@ A comprehensive file indexing and search package for AI agents within the TokenR
 
 ## Overview
 
-The `@tokenring-ai/file-index` package provides powerful file indexing and search capabilities designed specifically for AI agents. It supports multiple search strategies including full-text search, semantic search, and hybrid search that combines multiple approaches for optimal results.
+The `@tokenring-ai/file-index` package provides powerful file indexing and search capabilities designed specifically for AI agents. It supports multiple search strategies including full-text search and hybrid search that combines full-text matching with token overlap scoring.
 
 ### Key Features
 
-- **Multiple Search Strategies**: Full-text search, semantic search, and hybrid search combining embeddings, keywords, and full-text matching
-- **Semantic Text Chunking**: Intelligent chunking using sentence boundaries and token limits
+- **Multiple Search Strategies**: Full-text search and hybrid search combining keyword matching and token overlap scoring
+- **Semantic Text Chunking**: Intelligent chunking using line boundaries with configurable limits
 - **File System Integration**: Automatic file watching and re-indexing using chokidar
-- **Provider Architecture**: Extensible system supporting different storage backends (in-memory, database, etc.)
+- **Provider Architecture**: Extensible system supporting different storage backends (currently includes in-memory implementation)
 - **Agent Integration**: Seamless integration with TokenRing AI agents through tools and chat commands
-- **Symbol Extraction**: JavaScript/TypeScript symbol extraction using Tree-sitter
 - **Hybrid Search with Merging**: Advanced search that merges adjacent results for better context
+- **Command Interface**: Built-in chat command for performing searches
+- **Tool Integration**: Exported tool for hybrid search functionality
 
 ## Installation
 
 ```bash
-npm install @tokenring-ai/file-index
+bun install @tokenring-ai/file-index
 ```
 
 ## Quick Start
@@ -108,13 +109,26 @@ pkg/file-index/
 The base interface for all file indexing providers. Extend this class to create custom implementations.
 
 ```typescript
-export abstract class FileIndexProvider {
+export interface SearchResult {
+  path: string;
+  chunk_index: number;
+  content: string;
+  relevance?: number;
+  distance?: number;
+}
+
+export default abstract class FileIndexProvider {
+  // Core search methods
   abstract search(query: string, limit?: number): Promise<SearchResult[]>;
   abstract fullTextSearch(query: string, limit?: number): Promise<SearchResult[]>;
+
+  // Lifecycle methods
+  abstract waitReady(): Promise<void>;
   abstract processFile(filePath: string): Promise<void>;
   abstract onFileChanged(type: string, filePath: string): void;
-  abstract waitReady(): Promise<void>;
   abstract close(): Promise<void>;
+
+  // Current file context
   abstract setCurrentFile(filePath: string): void;
   abstract clearCurrentFile(): void;
   abstract getCurrentFile(): string | null;
@@ -175,24 +189,31 @@ interface HybridSearchResult {
 }
 ```
 
-### Text Chunking
+### Hybrid Search Tool
 
 ```typescript
-import { chunkText } from '@tokenring-ai/file-index/util/chunker';
-
-const chunks = chunkText(longText, {
-  maxTokens: 256,
-  overlapTokens: 32
-});
+const hybridSearchFileIndex = {
+  name: 'file-index_hybridSearchFileIndex',
+  description: 'Hybrid semantic+full-text+keyword search with merging/deduplication',
+  inputSchema: z.object({
+    query: z.string().describe('Text or code query'),
+    topK: z.number().int().default(10).describe('Number of results to return'),
+    textWeight: z.number().default(0.3).describe('Weight for token overlap'),
+    fullTextWeight: z.number().default(0.3).describe('Weight for full-text search'),
+    mergeRadius: z.number().int().default(1).describe('Merge radius for adjacent chunks')
+  }),
+  execute: async (params: any, agent: Agent) => HybridSearchResult[]
+}
 ```
 
-### Symbol Extraction
+### Search Command
 
 ```typescript
-import { extractSymbolsFromFile } from '@tokenring-ai/file-index/util/symbols/symbolExtractor';
-
-const symbols = await extractSymbolsFromFile('src/main.ts');
-// Output: [{ name: 'main', kind: 'function', startLine: 1, endLine: 5 }]
+const searchCommand = {
+  description: '/search - Search for text across files in the project',
+  execute: async (query: string, agent: Agent) => void,
+  help: string
+}
 ```
 
 ## Configuration
@@ -202,7 +223,6 @@ const symbols = await extractSymbolsFromFile('src/main.ts');
 ```typescript
 // Register multiple providers
 fileIndexService.registerFileIndexProvider('ephemeral', new EphemeralFileIndexProvider());
-fileIndexService.registerFileIndexProvider('persistent', new PersistentFileIndexProvider());
 
 // Switch between providers
 fileIndexService.setActiveFileIndexProviderName('ephemeral');
@@ -241,15 +261,17 @@ agent.registerService(new FileIndexService());
 
 ## Dependencies
 
-- `@tokenring-ai/agent` (^0.1.0) - Agent integration
-- `@tokenring-ai/filesystem` (^0.1.0) - File system utilities
-- `@tokenring-ai/utility` (^0.1.0) - Utility functions
-- `chokidar` (^4.0.3) - File system watching
+- `@tokenring-ai/agent` (^0.2.0) - Agent integration
+- `@tokenring-ai/app` (^0.2.0) - Application framework
+- `@tokenring-ai/chat` (^0.2.0) - Chat integration
+- `@tokenring-ai/filesystem` (^0.2.0) - File system utilities
+- `@tokenring-ai/utility` (^0.2.0) - Utility functions
+- `chokidar` (^5.0.0) - File system watching
 - `commander` (^14.0.2) - CLI framework
 - `glob-gitignore` (^1.0.15) - Glob patterns with .gitignore support
 - `gpt-tokenizer` (^3.4.0) - Token counting
 - `mysql2` (^3.15.3) - MySQL client (for future database support)
-- `sentencex` (^1.0.9) - Sentence segmentation
+- `sentencex` (^1.0.13) - Sentence segmentation
 - `sqlite-vec` (0.1.7-alpha.2) - Vector database support
 - `tree-sitter` (^0.25.0) - Code parsing
 - `tree-sitter-javascript` (^0.25.0) - JavaScript grammar
@@ -260,13 +282,19 @@ agent.registerService(new FileIndexService());
 ### Building
 
 ```bash
-npm run build
+bun run build
 ```
 
 ### Linting
 
 ```bash
-npm run eslint
+bun run eslint
+```
+
+### Testing
+
+```bash
+bun run test
 ```
 
 ### TypeScript Configuration
