@@ -18,7 +18,6 @@ export default {
   version: packageJSON.version,
   description: packageJSON.description,
   install(app, config) {
-    // const config = app.getConfigSlice('fileIndex', FileIndexConfigSchema);
     if (config.fileIndex) {
       app.waitForService(ChatService, chatService =>
         chatService.addTools(packageJSON.name, tools)
