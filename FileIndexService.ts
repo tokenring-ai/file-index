@@ -1,45 +1,63 @@
 import Agent from "@tokenring-ai/agent/Agent";
-
 import {TokenRingService} from "@tokenring-ai/app/types";
-import KeyedRegistryWithSingleSelection from "@tokenring-ai/utility/registry/KeyedRegistryWithSingleSelection";
+import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
+import {z} from "zod";
 import FileIndexProvider, {SearchResult} from "./FileIndexProvider.ts";
+import {FileIndexAgentConfigSchema, FileIndexConfigSchema} from "./schema.ts";
+import {FileIndexState} from "./state/FileIndexState.ts";
 
 export default class FileIndexService implements TokenRingService {
   name = "FileIndexService";
   description = "Provides FileIndex functionality";
 
-  private fileIndexProviderRegistry = new KeyedRegistryWithSingleSelection<FileIndexProvider>();
+  private providers = new KeyedRegistry<FileIndexProvider>();
 
-  registerFileIndexProvider = this.fileIndexProviderRegistry.register;
-  getActiveFileIndexProviderName = this.fileIndexProviderRegistry.getActiveItemName;
-  setActiveFileIndexProviderName = this.fileIndexProviderRegistry.setEnabledItem;
-  getAvailableFileIndexProviders = this.fileIndexProviderRegistry.getAllItemNames;
+  registerFileIndexProvider = this.providers.register;
+  getAvailableFileIndexProviders = this.providers.getAllItemNames;
+
+  constructor(readonly options: z.output<typeof FileIndexConfigSchema>) {}
+
+  async attach(agent: Agent): Promise<void> {
+    const agentConfig = agent.getAgentConfigSlice('fileIndex', FileIndexAgentConfigSchema);
+    agent.initializeState(FileIndexState, agentConfig);
+  }
+
+  requireActiveProvider(agent: Agent): FileIndexProvider {
+    const activeProvider = agent.getState(FileIndexState).activeProvider ?? this.options.defaultProvider;
+    return this.providers.requireItemByName(activeProvider);
+  }
+
+  setActiveProvider(name: string, agent: Agent): void {
+    agent.mutateState(FileIndexState, (state) => {
+      state.activeProvider = name;
+    });
+  }
 
   async fullTextSearch(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]> {
-    return this.fileIndexProviderRegistry.getActiveItem().fullTextSearch(query, limit);
+    return this.requireActiveProvider(agent).fullTextSearch(query, limit);
   }
 
   async search(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]> {
-    return this.fileIndexProviderRegistry.getActiveItem().search(query, limit);
+    return this.requireActiveProvider(agent).search(query, limit);
   }
 
-  async waitReady(_agent: Agent): Promise<void> {
-    return this.fileIndexProviderRegistry.getActiveItem().waitReady();
+  async waitReady(agent: Agent): Promise<void> {
+    return this.requireActiveProvider(agent).waitReady();
   }
 
-  setCurrentFile(filePath: string) {
-    this.fileIndexProviderRegistry.getActiveItem().setCurrentFile(filePath);
+  setCurrentFile(filePath: string, agent: Agent) {
+    this.requireActiveProvider(agent).setCurrentFile(filePath);
   }
 
-  clearCurrentFile() {
-    this.fileIndexProviderRegistry.getActiveItem().clearCurrentFile();
+  clearCurrentFile(agent: Agent) {
+    this.requireActiveProvider(agent).clearCurrentFile();
   }
 
-  getCurrentFile() {
-    return this.fileIndexProviderRegistry.getActiveItem().getCurrentFile();
+  getCurrentFile(agent: Agent) {
+    return this.requireActiveProvider(agent).getCurrentFile();
   }
 
-  async close(): Promise<void> {
-    return this.fileIndexProviderRegistry.getActiveItem().close();
+  async close(agent: Agent): Promise<void> {
+    return this.requireActiveProvider(agent).close();
   }
 }

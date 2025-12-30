@@ -1,5 +1,5 @@
-import search from "./commands/search.ts";
+import fileindex from "./commands/fileindex.ts";
 
 export default {
-  search,
+  fileindex,
 };

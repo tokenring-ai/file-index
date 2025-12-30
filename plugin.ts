@@ -5,7 +5,7 @@ import {z} from "zod";
 import chatCommands from "./chatCommands.ts";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
 import FileIndexService from "./FileIndexService.ts";
-import {FileIndexConfigSchema} from "./index.ts";
+import {FileIndexConfigSchema} from "./schema.ts";
 import packageJSON from './package.json' with {type: 'json'};
 import tools from "./tools.ts";
 
@@ -18,27 +18,28 @@ export default {
   version: packageJSON.version,
   description: packageJSON.description,
   install(app, config) {
-    if (config.fileIndex) {
-      app.waitForService(ChatService, chatService =>
-        chatService.addTools(packageJSON.name, tools)
-      );
-      app.waitForService(AgentCommandService, agentCommandService =>
-        agentCommandService.addAgentCommands(chatCommands)
-      );
-      const fileIndexService = new FileIndexService();
-      app.addServices(fileIndexService);
+    if (!config.fileIndex) return;
 
-      if (config.fileIndex.providers) {
-        for (const name in config.fileIndex.providers) {
-          const fileIndexConfig = config.fileIndex.providers[name];
-          switch (fileIndexConfig.type) {
-            case "ephemeral":
-              fileIndexService.registerFileIndexProvider(name, new EphemeralFileIndexProvider());
-              break;
-          }
+    const fileIndexService = new FileIndexService(config.fileIndex);
+    app.addServices(fileIndexService);
+
+    if (config.fileIndex.providers) {
+      for (const name in config.fileIndex.providers) {
+        const fileIndexConfig = config.fileIndex.providers[name];
+        switch (fileIndexConfig.type) {
+          case "ephemeral":
+            fileIndexService.registerFileIndexProvider(name, new EphemeralFileIndexProvider());
+            break;
         }
       }
     }
+
+    app.waitForService(ChatService, chatService =>
+      chatService.addTools(packageJSON.name, tools)
+    );
+    app.waitForService(AgentCommandService, agentCommandService =>
+      agentCommandService.addAgentCommands(chatCommands)
+    );
   },
   config: packageConfigSchema
 } satisfies TokenRingPlugin<typeof packageConfigSchema>;
