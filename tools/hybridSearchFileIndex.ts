@@ -1,6 +1,5 @@
 import Agent from "@tokenring-ai/agent/Agent";
 import {TokenRingToolDefinition} from "@tokenring-ai/chat/schema";
-import FileSystemService from "@tokenring-ai/filesystem/FileSystemService";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 

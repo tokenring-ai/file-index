@@ -1,5 +1,4 @@
 import Agent from "@tokenring-ai/agent/Agent";
-import FileIndexService from "../../../FileIndexService.ts";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
 export async function get(remainder: string, agent: Agent): Promise<void> {

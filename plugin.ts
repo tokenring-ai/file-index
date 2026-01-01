@@ -5,12 +5,12 @@ import {z} from "zod";
 import chatCommands from "./chatCommands.ts";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
 import FileIndexService from "./FileIndexService.ts";
-import {FileIndexConfigSchema} from "./schema.ts";
+import {FileIndexServiceConfigSchema} from "./schema.ts";
 import packageJSON from './package.json' with {type: 'json'};
 import tools from "./tools.ts";
 
 const packageConfigSchema = z.object({
-  fileIndex: FileIndexConfigSchema.optional(),
+  fileIndex: FileIndexServiceConfigSchema.optional(),
 });
 
 export default {

@@ -2,14 +2,14 @@ import {Agent} from "@tokenring-ai/agent";
 import type {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
 import type {AgentStateSlice} from "@tokenring-ai/agent/types";
 import {z} from "zod";
-import {FileIndexAgentConfigSchema} from "../schema.ts";
+import {FileIndexServiceConfigSchema} from "../schema.ts";
 
 export class FileIndexState implements AgentStateSlice {
   name = "FileIndexState";
   activeProvider: string | null;
 
-  constructor(readonly initialConfig: z.output<typeof FileIndexAgentConfigSchema>) {
-    this.activeProvider = initialConfig.provider ?? null;
+  constructor(readonly initialConfig: z.output<typeof FileIndexServiceConfigSchema>["agentDefaults"]) {
+    this.activeProvider = initialConfig.provider;
   }
 
   transferStateFromParent(parent: Agent): void {

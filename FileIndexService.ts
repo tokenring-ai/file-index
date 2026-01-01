@@ -1,9 +1,10 @@
 import Agent from "@tokenring-ai/agent/Agent";
 import {TokenRingService} from "@tokenring-ai/app/types";
+import deepMerge from "@tokenring-ai/utility/object/deepMerge";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import {z} from "zod";
 import FileIndexProvider, {SearchResult} from "./FileIndexProvider.ts";
-import {FileIndexAgentConfigSchema, FileIndexConfigSchema} from "./schema.ts";
+import {FileIndexAgentConfigSchema, FileIndexServiceConfigSchema} from "./schema.ts";
 import {FileIndexState} from "./state/FileIndexState.ts";
 
 export default class FileIndexService implements TokenRingService {
@@ -15,15 +16,16 @@ export default class FileIndexService implements TokenRingService {
   registerFileIndexProvider = this.providers.register;
   getAvailableFileIndexProviders = this.providers.getAllItemNames;
 
-  constructor(readonly options: z.output<typeof FileIndexConfigSchema>) {}
+  constructor(readonly options: z.output<typeof FileIndexServiceConfigSchema>) {}
 
   async attach(agent: Agent): Promise<void> {
-    const agentConfig = agent.getAgentConfigSlice('fileIndex', FileIndexAgentConfigSchema);
+    const agentConfig = deepMerge(this.options.agentDefaults, agent.getAgentConfigSlice('fileIndex', FileIndexAgentConfigSchema));
     agent.initializeState(FileIndexState, agentConfig);
   }
 
   requireActiveProvider(agent: Agent): FileIndexProvider {
-    const activeProvider = agent.getState(FileIndexState).activeProvider ?? this.options.defaultProvider;
+    const activeProvider = agent.getState(FileIndexState).activeProvider;
+    if (! activeProvider) throw new Error("No file index provider has been enabled.");
     return this.providers.requireItemByName(activeProvider);
   }
 
