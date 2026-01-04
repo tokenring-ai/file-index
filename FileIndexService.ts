@@ -18,7 +18,7 @@ export default class FileIndexService implements TokenRingService {
 
   constructor(readonly options: z.output<typeof FileIndexServiceConfigSchema>) {}
 
-  async attach(agent: Agent): Promise<void> {
+  attach(agent: Agent): void {
     const agentConfig = deepMerge(this.options.agentDefaults, agent.getAgentConfigSlice('fileIndex', FileIndexAgentConfigSchema));
     agent.initializeState(FileIndexState, agentConfig);
   }
