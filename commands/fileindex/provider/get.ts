@@ -3,5 +3,5 @@ import {FileIndexState} from "../../../state/FileIndexState.ts";
 
 export async function get(remainder: string, agent: Agent): Promise<void> {
   const activeProvider = agent.getState(FileIndexState).activeProvider;
-  agent.infoLine(`Active provider: ${activeProvider ?? 'none'}`);
+  agent.infoMessage(`Active provider: ${activeProvider ?? 'none'}`);
 }

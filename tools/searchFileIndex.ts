@@ -20,7 +20,7 @@ async function execute(
 
   const hits = await fileIndex.search(query, k, agent);
   // Each hit has: {path, chunk_index, content, distance, ...}
-  agent.infoLine(
+  agent.infoMessage(
     `[${name}] Found ${hits.length} matching chunks for query: ${query}\n`,
   );
   return hits.map(({path, chunk_index, content, distance}: any) => ({

@@ -146,7 +146,7 @@ async function execute(
     .sort((a, b) => b.hybridScore - a.hybridScore)
     .slice(0, topK);
 
-  agent.infoLine(
+  agent.infoMessage(
     `[${name}] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`,
   );
   return finalResults;

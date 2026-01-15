@@ -5,5 +5,5 @@ export async function defaultProvider(remainder: string, agent: Agent): Promise<
   agent.mutateState(FileIndexState, state => {
     state.activeProvider = state.initialConfig.provider;
   });
-  agent.infoLine(`Default provider: ${defaultProvider}`);
+  agent.infoMessage(`Default provider: ${defaultProvider}`);
 }

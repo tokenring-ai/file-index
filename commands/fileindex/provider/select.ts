@@ -7,13 +7,13 @@ export async function select(remainder: string, agent: Agent): Promise<void> {
   const availableProviders = fileIndexService.getAvailableFileIndexProviders();
 
   if (availableProviders.length === 0) {
-    agent.infoLine("No file index providers are registered.");
+    agent.infoMessage("No file index providers are registered.");
     return;
   }
 
   if (availableProviders.length === 1) {
     fileIndexService.setActiveProvider(availableProviders[0], agent);
-    agent.infoLine(`Only one provider configured, auto-selecting: ${availableProviders[0]}`);
+    agent.infoMessage(`Only one provider configured, auto-selecting: ${availableProviders[0]}`);
     return;
   }
 
@@ -32,8 +32,8 @@ export async function select(remainder: string, agent: Agent): Promise<void> {
 
   if (selectedValue) {
     fileIndexService.setActiveProvider(selectedValue, agent);
-    agent.infoLine(`Active provider set to: ${selectedValue}`);
+    agent.infoMessage(`Active provider set to: ${selectedValue}`);
   } else {
-    agent.infoLine("Provider selection cancelled.");
+    agent.infoMessage("Provider selection cancelled.");
   }
 }

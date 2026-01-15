@@ -6,15 +6,15 @@ export async function set(remainder: string, agent: Agent): Promise<void> {
   const providerName = remainder.trim();
 
   if (!providerName) {
-    agent.errorLine("Usage: /fileindex provider set <name>");
+    agent.errorMessage("Usage: /fileindex provider set <name>");
     return;
   }
 
   const availableProviders = fileIndexService.getAvailableFileIndexProviders();
   if (availableProviders.includes(providerName)) {
     fileIndexService.setActiveProvider(providerName, agent);
-    agent.infoLine(`Active provider set to: ${providerName}`);
+    agent.infoMessage(`Active provider set to: ${providerName}`);
   } else {
-    agent.infoLine(`Provider "${providerName}" not found. Available providers: ${availableProviders.join(", ")}`);
+    agent.infoMessage(`Provider "${providerName}" not found. Available providers: ${availableProviders.join(", ")}`);
   }
 }
