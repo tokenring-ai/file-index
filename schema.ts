@@ -1,4 +1,5 @@
 import {z} from "zod";
+
 export const FileIndexAgentConfigSchema = z.object({
   provider: z.string().optional()
 }).default({});

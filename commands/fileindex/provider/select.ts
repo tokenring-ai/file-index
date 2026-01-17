@@ -1,4 +1,5 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import type {TreeLeaf} from "@tokenring-ai/agent/question";
 import FileIndexService from "../../../FileIndexService.ts";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
@@ -18,19 +19,26 @@ export async function select(remainder: string, agent: Agent): Promise<void> {
   }
 
   const activeProvider = agent.getState(FileIndexState).activeProvider;
-  const formattedProviders = availableProviders.map(name => ({
+  const formattedProviders: TreeLeaf[] = availableProviders.map(name => ({
     name: `${name}${name === activeProvider ? " (current)" : ""}`,
     value: name,
   }));
 
-  const selectedValue = await agent.askHuman({
-    type: "askForSingleTreeSelection",
-    title: "FileIndex Provider Selection",
+  const selection = await agent.askQuestion({
     message: "Select an active file index provider",
-    tree: {name: "Available Providers", children: formattedProviders}
+    question: {
+      type: 'treeSelect',
+      label: "FileIndex Provider Selection",
+      key: "result",
+      defaultValue: activeProvider ? [activeProvider] : undefined,
+      minimumSelections: 1,
+      maximumSelections: 1,
+      tree: formattedProviders
+    }
   });
 
-  if (selectedValue) {
+  if (selection) {
+    const selectedValue = selection[0];
     fileIndexService.setActiveProvider(selectedValue, agent);
     agent.infoMessage(`Active provider set to: ${selectedValue}`);
   } else {

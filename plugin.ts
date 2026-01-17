@@ -5,8 +5,8 @@ import {z} from "zod";
 import chatCommands from "./chatCommands.ts";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
 import FileIndexService from "./FileIndexService.ts";
-import {FileIndexServiceConfigSchema} from "./schema.ts";
 import packageJSON from './package.json' with {type: 'json'};
+import {FileIndexServiceConfigSchema} from "./schema.ts";
 import tools from "./tools.ts";
 
 const packageConfigSchema = z.object({

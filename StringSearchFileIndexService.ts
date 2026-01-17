@@ -1,5 +1,5 @@
-import TokenRingApp from "@tokenring-ai/app";
 import Agent from "@tokenring-ai/agent/Agent";
+import TokenRingApp from "@tokenring-ai/app";
 
 import {TokenRingService} from "@tokenring-ai/app/types";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
