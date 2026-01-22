@@ -4,8 +4,13 @@ import type {AgentStateSlice} from "@tokenring-ai/agent/types";
 import {z} from "zod";
 import {FileIndexServiceConfigSchema} from "../schema.ts";
 
-export class FileIndexState implements AgentStateSlice {
+const serializationSchema = z.object({
+  activeProvider: z.string().nullable()
+});
+
+export class FileIndexState implements AgentStateSlice<typeof serializationSchema> {
   name = "FileIndexState";
+  serializationSchema = serializationSchema;
   activeProvider: string | null;
 
   constructor(readonly initialConfig: z.output<typeof FileIndexServiceConfigSchema>["agentDefaults"]) {
@@ -18,11 +23,11 @@ export class FileIndexState implements AgentStateSlice {
 
   reset(what: ResetWhat[]): void {}
 
-  serialize(): object {
+  serialize(): z.output<typeof serializationSchema> {
     return { activeProvider: this.activeProvider };
   }
 
-  deserialize(data: any): void {
+  deserialize(data: z.output<typeof serializationSchema>): void {
     this.activeProvider = data.activeProvider;
   }
 
