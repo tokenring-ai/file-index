@@ -4,6 +4,7 @@ import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
 const name = "file-index_hybridSearchFileIndex";
+const displayName = "FileIndex/hybridSearchFileIndex";
 
 interface HybridSearchResult {
   path: string;
@@ -184,5 +185,5 @@ const inputSchema = z.object({
 });
 
 export default {
-  name, description, inputSchema, execute,
+  name, displayName, description, inputSchema, execute,
 } satisfies TokenRingToolDefinition<typeof inputSchema>;

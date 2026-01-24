@@ -7,6 +7,7 @@ import FileIndexService from "../FileIndexService.ts";
  * Searches the file index for semantically similar chunks to the query.
  */
 const name = "file-index_searchFileIndex";
+const displayName = "FileIndex/searchFileIndex";
 async function execute(
   {query, k = 5}: z.infer<typeof inputSchema>,
   agent: Agent,
@@ -48,5 +49,5 @@ const inputSchema = z.object({
 });
 
 export default {
-  name, description, inputSchema, execute,
+  name, displayName, description, inputSchema, execute,
 } satisfies TokenRingToolDefinition<typeof inputSchema>;
