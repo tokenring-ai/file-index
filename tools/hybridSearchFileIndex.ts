@@ -1,5 +1,5 @@
 import Agent from "@tokenring-ai/agent/Agent";
-import {TokenRingToolDefinition} from "@tokenring-ai/chat/schema";
+import {TokenRingToolDefinition, type TokenRingToolJSONResult} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
@@ -26,9 +26,9 @@ async function execute(
     textWeight = 0.3,
     fullTextWeight = 0.3,
     mergeRadius = 1,
-  }: z.infer<typeof inputSchema>,
+  }: z.output<typeof inputSchema>,
   agent: Agent,
-): Promise<HybridSearchResult[]> {
+): Promise<TokenRingToolJSONResult<HybridSearchResult[]>> {
   const fileIndex = agent.requireServiceByType(FileIndexService);
   if (!query) {
     throw new Error(`[${name}] Missing query parameter`);
@@ -150,7 +150,10 @@ async function execute(
   agent.infoMessage(
     `[${name}] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`,
   );
-  return finalResults;
+  return {
+    type: "json",
+    data: finalResults
+  };
 }
 
 const description =
