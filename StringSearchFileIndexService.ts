@@ -9,10 +9,8 @@ export default class StringSearchFileIndexService implements TokenRingService {
   description = "Provides StringSearchFileIndex functionality";
 
   private provider: EphemeralFileIndexProvider;
-  private app!: TokenRingApp;
 
-  constructor(app: TokenRingApp, baseDirectory?: string) {
-    this.app = app;
+  constructor(private app: TokenRingApp, private baseDirectory?: string) {
     this.provider = new EphemeralFileIndexProvider(baseDirectory);
   }
 
