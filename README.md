@@ -4,16 +4,16 @@ Service that adds file contents or file names to chat memory through intelligent
 
 ## Overview
 
-The `@tokenring-ai/file-index` package provides file indexing and search capabilities for AI agents. It enables agents to index project files and perform efficient searches across codebases with multiple search strategies.
+The `@tokenring-ai/file-index` package provides file indexing and search capabilities for AI agents. It enables agents to index project files and perform efficient searches across codebases with hybrid search capabilities.
 
 ### Key Features
 
-- **Multiple Search Strategies**: Hybrid search combining embedding similarity, full-text matching, and token overlap scoring
+- **Hybrid Search**: Combines embedding similarity, full-text matching, and token overlap scoring
 - **Text Chunking**: Line-based chunking with ~1000 character chunks for efficient processing
 - **In-Memory Provider**: Fast, non-persistent file indexing using memory storage
 - **Provider Architecture**: Extensible system supporting different storage backends through the provider interface
 - **Agent Integration**: Seamless integration with TokenRing AI agents through tools and chat commands
-- **Hybrid Search with Merging**: Advanced search algorithm that merges adjacent results for better context coverage
+- **Result Merging**: Advanced search algorithm that merges adjacent results for better context coverage
 - **Chat Commands**: Built-in command interface for managing providers and performing searches
 - **Tool Integration**: Exported tools for hybrid search functionality
 
@@ -100,7 +100,6 @@ import EphemeralFileIndexProvider from './EphemeralFileIndexProvider.ts';
 import FileIndexService from './FileIndexService.ts';
 import packageJSON from './package.json' with {type: 'json'};
 import {FileIndexServiceConfigSchema} from './schema.ts';
-import tools from './tools.ts';
 
 const packageConfigSchema = z.object({
   fileIndex: FileIndexServiceConfigSchema.optional()
@@ -161,7 +160,7 @@ pkg/file-index/
 │               ├── set.ts        # Set provider by name
 │               ├── default.ts    # Reset to default provider
 │               └── select.ts     # Interactive provider selection
-├── tools.ts                      # Exports agent tools
+├── tools/
 │   └── hybridSearchFileIndex.ts  # Hybrid search tool
 ├── state/
 │   └── FileIndexState.ts         # State management for file index
@@ -180,15 +179,12 @@ All Token Ring packages are referenced as `@tokenring-ai/*` versions from the ca
 - `@tokenring-ai/filesystem`: File system operations
 - `@tokenring-ai/utility`: Shared utility functions
 - `zod`: Schema validation
-- `fs-extra`: Enhanced filesystem utilities
-- `chokidar`: File system watching for changes
-- `glob-gitignore`: Gitignore-aware file matching
-- `gpt-tokenizer`: Token counting for semantic analysis
-- `sentencex`: Sentence segmentation utilities
-- `tree-sitter`: Abstract syntax tree parsing
-- `tree-sitter-javascript`: JavaScript/TypeScript language support
-- `mysql2`: MySQL database driver (for future database provider)
-- `sqlite-vec`: Vector search for SQLite (for future database provider)
+
+### Development Dependencies
+
+- `vitest`: Unit testing framework
+- `typescript`: TypeScript compiler
+- `@types/fs-extra`: Type definitions for fs-extra
 
 ## Core Components
 
@@ -247,10 +243,12 @@ await provider.start();
 - File change handling (unlinks remove from index, changes trigger re-indexing)
 
 **Chunking Strategy:**
+
 - Simple line-based splitting with 1000 character limit per chunk
 - Chunks are concatenated with newlines between them
 
 **Performance Characteristics:**
+
 - Batch processing with up to 10 parallel tasks
 - Polling interval of 250ms for file changes
 - Lazy initialization pattern (files processed as queued)
@@ -452,16 +450,16 @@ Search for text across indexed files.
 ### Plugin Configuration Schema
 
 ```typescript
-const FileIndexServiceConfigSchema = z.object({
+export const FileIndexServiceConfigSchema = z.object({
   providers: z.record(z.string(), z.any()),
   agentDefaults: z.object({
     provider: z.string()
   })
 });
 
-const packageConfigSchema = z.object({
-  fileIndex: FileIndexServiceConfigSchema.optional()
-});
+export const FileIndexAgentConfigSchema = z.object({
+  provider: z.string().optional()
+}).default({});
 ```
 
 ### Configuration Example
@@ -629,7 +627,6 @@ import EphemeralFileIndexProvider from './EphemeralFileIndexProvider.ts';
 import FileIndexService from './FileIndexService.ts';
 import packageJSON from './package.json' with {type: 'json'};
 import {FileIndexServiceConfigSchema} from './schema.ts';
-import tools from './tools.ts';
 
 const packageConfigSchema = z.object({
   fileIndex: FileIndexServiceConfigSchema.optional()
