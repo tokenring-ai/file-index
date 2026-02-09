@@ -9,7 +9,7 @@ const serializationSchema = z.object({
 });
 
 export class FileIndexState implements AgentStateSlice<typeof serializationSchema> {
-  name = "FileIndexState";
+  readonly name = "FileIndexState";
   serializationSchema = serializationSchema;
   activeProvider: string | null;
 

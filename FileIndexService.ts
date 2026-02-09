@@ -8,7 +8,7 @@ import {FileIndexAgentConfigSchema, FileIndexServiceConfigSchema} from "./schema
 import {FileIndexState} from "./state/FileIndexState.ts";
 
 export default class FileIndexService implements TokenRingService {
-  name = "FileIndexService";
+  readonly name = "FileIndexService";
   description = "Provides FileIndex functionality";
 
   private providers = new KeyedRegistry<FileIndexProvider>();
@@ -45,18 +45,6 @@ export default class FileIndexService implements TokenRingService {
 
   async waitReady(agent: Agent): Promise<void> {
     return this.requireActiveProvider(agent).waitReady();
-  }
-
-  setCurrentFile(filePath: string, agent: Agent) {
-    this.requireActiveProvider(agent).setCurrentFile(filePath);
-  }
-
-  clearCurrentFile(agent: Agent) {
-    this.requireActiveProvider(agent).clearCurrentFile();
-  }
-
-  getCurrentFile(agent: Agent) {
-    return this.requireActiveProvider(agent).getCurrentFile();
   }
 
   async close(agent: Agent): Promise<void> {

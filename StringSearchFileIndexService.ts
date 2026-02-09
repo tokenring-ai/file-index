@@ -5,7 +5,7 @@ import {TokenRingService} from "@tokenring-ai/app/types";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
 
 export default class StringSearchFileIndexService implements TokenRingService {
-  name = "StringSearchFileIndexService";
+  readonly name = "StringSearchFileIndexService";
   description = "Provides StringSearchFileIndex functionality";
 
   private provider: EphemeralFileIndexProvider;
@@ -18,19 +18,11 @@ export default class StringSearchFileIndexService implements TokenRingService {
     await this.provider.start();
   }
 
-  onFileChanged(type: string, filePath: string) {
-    this.provider.onFileChanged(type, filePath);
-  }
-
   async waitReady(agent: Agent) {
     if (agent) {
       agent.infoMessage(`[${this.name}] Waiting for index to finish initializing...`);
     }
     return this.provider.waitReady();
-  }
-
-  async processFile(filePath: string) {
-    return this.provider.processFile(filePath);
   }
 
   async fullTextSearch(query: string, limit: number = 10, agent: Agent) {
@@ -40,18 +32,6 @@ export default class StringSearchFileIndexService implements TokenRingService {
 
   async search(query: string, limit: number = 10, _agent: Agent) {
     return this.provider.search(query, limit);
-  }
-
-  setCurrentFile(filePath: string) {
-    this.provider.setCurrentFile(filePath);
-  }
-
-  clearCurrentFile() {
-    this.provider.clearCurrentFile();
-  }
-
-  getCurrentFile() {
-    return this.provider.getCurrentFile();
   }
 
   async close() {
