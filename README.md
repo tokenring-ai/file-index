@@ -1,6 +1,6 @@
 # @tokenring-ai/file-index
 
-Service that adds file contents or file names to chat memory through intelligent search and indexing.
+Service that adds file contents or file names to the chat memory through intelligent search and indexing.
 
 ## Overview
 
@@ -8,14 +8,13 @@ The `@tokenring-ai/file-index` package provides file indexing and search capabil
 
 ### Key Features
 
-- **Hybrid Search**: Combines embedding similarity, full-text matching, and token overlap scoring
+- **Hybrid Search**: Combines embedding similarity, full-text matching, and token overlap scoring with result merging
 - **Text Chunking**: Line-based chunking with ~1000 character chunks for efficient processing
-- **In-Memory Provider**: Fast, non-persistent file indexing using memory storage
 - **Provider Architecture**: Extensible system supporting different storage backends through the provider interface
 - **Agent Integration**: Seamless integration with TokenRing AI agents through tools and chat commands
 - **Result Merging**: Advanced search algorithm that merges adjacent results for better context coverage
 - **Chat Commands**: Built-in command interface for managing providers and performing searches
-- **Tool Integration**: Exported tools for hybrid search functionality
+- **Tool Integration**: Exported tools for hybrid search and semantic search functionality
 
 ## Installation
 
@@ -28,9 +27,9 @@ bun install @tokenring-ai/file-index
 ### Basic Service Setup
 
 ```typescript
-import FileIndexService from './FileIndexService.ts';
-import EphemeralFileIndexProvider from './EphemeralFileIndexProvider.ts';
-import { FileIndexServiceConfigSchema } from './schema.ts';
+import FileIndexService from '@tokenring-ai/file-index/FileIndexService.ts';
+import EphemeralFileIndexProvider from '@tokenring-ai/file-index/EphemeralFileIndexProvider.ts';
+import { FileIndexServiceConfigSchema } from '@tokenring-ai/file-index/schema.ts';
 
 // Create file index service with configuration
 const config = {
@@ -95,11 +94,12 @@ The package follows the standard TokenRing plugin pattern with proper configurat
 ```typescript
 import {TokenRingPlugin} from '@tokenring-ai/app';
 import {z} from 'zod';
-import chatCommands from './chatCommands.ts';
-import EphemeralFileIndexProvider from './EphemeralFileIndexProvider.ts';
-import FileIndexService from './FileIndexService.ts';
+import chatCommands from '@tokenring-ai/file-index/chatCommands.ts';
+import EphemeralFileIndexProvider from '@tokenring-ai/file-index/EphemeralFileIndexProvider.ts';
+import FileIndexService from '@tokenring-ai/file-index/FileIndexService.ts';
 import packageJSON from './package.json' with {type: 'json'};
-import {FileIndexServiceConfigSchema} from './schema.ts';
+import {FileIndexServiceConfigSchema} from '@tokenring-ai/file-index/schema.ts';
+import tools from '@tokenring-ai/file-index/tools.ts';
 
 const packageConfigSchema = z.object({
   fileIndex: FileIndexServiceConfigSchema.optional()
@@ -151,19 +151,27 @@ pkg/file-index/
 ├── FileIndexProvider.ts          # Abstract provider interface
 ├── EphemeralFileIndexProvider.ts # In-memory implementation
 ├── FileIndexService.ts           # Service registry for providers
+├── StringSearchFileIndexService.ts # Alternative file search implementation
 ├── chatCommands.ts               # Exports chat commands
 │   └── commands/
 │       └── fileindex/
+│           ├── fileindex.ts      # Main command router
+│           ├── provider.ts       # Provider command router
 │           ├── search.ts         # Search command implementation
-│           └── provider.ts       # Provider command router
-│               ├── get.ts        # Display current provider
-│               ├── set.ts        # Set provider by name
-│               ├── default.ts    # Reset to default provider
-│               └── select.ts     # Interactive provider selection
+│           ├── provider/
+│           │   ├── get.ts        # Display current provider
+│           │   ├── set.ts        # Set provider by name
+│           │   ├── default.ts    # Reset to default provider
+│           │   └── select.ts     # Interactive provider selection
 ├── tools/
-│   └── hybridSearchFileIndex.ts  # Hybrid search tool
+│   ├── hybridSearchFileIndex.ts  # Hybrid search tool
+│   └── searchFileIndex.ts        # Semantic search tool
 ├── state/
 │   └── FileIndexState.ts         # State management for file index
+├── util/
+│   ├── ComputeChunkLineStarts.ts # Compute line starts for chunks
+│   ├── chunker.ts                # Token-aware chunking
+│   └── sha256.ts                 # SHA256 hash utility
 └── vitest.config.ts              # Test configuration
 ```
 
@@ -179,6 +187,16 @@ All Token Ring packages are referenced as `@tokenring-ai/*` versions from the ca
 - `@tokenring-ai/filesystem`: File system operations
 - `@tokenring-ai/utility`: Shared utility functions
 - `zod`: Schema validation
+- `fs-extra`: File system operations
+- `chokidar`: File watching
+- `commander`: Command-line interface
+- `glob-gitignore`: Gitignore-style pattern matching
+- `gpt-tokenizer`: Token counting for chunking
+- `mysql2`: MySQL client
+- `sentencex`: Sentence segmentation
+- `sqlite-vec`: Vector database
+- `tree-sitter`: Syntax parsing
+- `tree-sitter-javascript`: JavaScript grammar
 
 ### Development Dependencies
 
@@ -275,17 +293,19 @@ const providers = service.getAvailableFileIndexProviders();
 - `search(query, limit, agent)`: Execute search using active provider
 - `fullTextSearch(query, limit, agent)`: Full-text search via active provider
 - `waitReady(agent)`: Wait for provider initialization
-- `setCurrentFile(filePath, agent)`: Set current working file
-- `clearCurrentFile(agent)`: Clear current file context
-- `getCurrentFile(agent)`: Get current file path
 - `close(agent)`: Close and cleanup provider
+- `requireActiveProvider(agent)`: Get current provider or throw if none set
+
+### StringSearchFileIndexService
+
+Alternative implementation focused on string-based search functionality.
 
 ### FileIndexState
 
 Manages agent-specific state for file index including active provider selection.
 
 ```typescript
-import { FileIndexState } from './state/FileIndexState.ts';
+import { FileIndexState } from '@tokenring-ai/file-index/state/FileIndexState.ts';
 
 // State automatically initialized when agent attaches to service
 const state = agent.getState(FileIndexState);
@@ -324,7 +344,7 @@ const hybridSearchFileIndex = {
     fullTextWeight: z.number().default(0.3).describe('Weight (0-1) for full-text search score (default 0.3)'),
     mergeRadius: z.number().int().default(1).describe('How close (in chunk indices) hits must be to merge into a single region (default: 1)')
   }),
-  execute: async (params, agent: Agent) => HybridSearchResult[]
+  execute: async (params, agent: Agent): Promise<TokenRingToolJSONResult<HybridSearchResult[]>>
 };
 ```
 
@@ -338,7 +358,7 @@ const hybridSearchFileIndex = {
 | `fullTextWeight` | number | 0.3 | Weight (0-1) for full-text search score |
 | `mergeRadius` | number | 1 | Maximum gap between chunk indices to enable merging |
 
-**Returns:** `HybridSearchResult[]` with merged search results:
+**Returns:** `TokenRingToolJSONResult<HybridSearchResult[]>` with merged search results:
 
 ```typescript
 interface HybridSearchResult {
@@ -357,6 +377,32 @@ interface HybridSearchResult {
 3. Normalizes and combines scores using weighted formula
 4. Merges adjacent/nearby chunks within mergeRadius per file
 5. Returns top K merged results sorted by hybrid score
+
+### searchFileIndex
+
+Semantic search tool using the MariaDB vector database.
+
+**Tool Definition:**
+
+```typescript
+const searchFileIndex = {
+  name: 'file-index_searchFileIndex',
+  displayName: 'FileIndex/searchFileIndex',
+  description: 'Semantic search for file/document code/text chunks using the MariaDB vector database.',
+  inputSchema: z.object({
+    query: z.string().describe('Freeform string query (code, question, natural language, etc) to search for similar file chunks.'),
+    k: z.number().int().default(5).describe('Number of top results to return (default 5)')
+  }),
+  execute: async (params, agent: Agent): Promise<TokenRingToolJSONResult<any[]>>
+};
+```
+
+**Input Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `query` | string | - | Query string for semantic search |
+| `k` | number | 5 | Number of top results to return |
 
 ## Chat Commands
 
@@ -416,8 +462,8 @@ Interactively select an active file index provider from available options.
 Search for text across indexed files.
 
 ```
-/fileindex search function getUser
-/fileindex search class Component
+/fileindex search function.getUser
+/fileindex search class.Component
 ```
 
 **Search Behavior:**
@@ -530,6 +576,7 @@ class FileIndexService {
 
   // Provider activation per agent
   setActiveProvider(name: string, agent: Agent): void;
+  requireActiveProvider(agent: Agent): FileIndexProvider;
 
   // Search operations
   search(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]>;
@@ -538,11 +585,6 @@ class FileIndexService {
   // Lifecycle management
   waitReady(agent: Agent): Promise<void>;
   close(agent: Agent): Promise<void>;
-
-  // File context operations (delegated to active provider)
-  setCurrentFile(filePath: string, agent: Agent): void;
-  clearCurrentFile(agent: Agent): void;
-  getCurrentFile(agent: Agent): string | null;
 }
 ```
 
@@ -577,7 +619,7 @@ class FileIndexState implements AgentStateSlice<typeof serializationSchema> {
     activeProvider: z.string().nullable()
   });
 
-  constructor(readonly initialConfig: AgentDefaults);
+  constructor(readonly initialConfig: z.output<typeof FileIndexServiceConfigSchema>["agentDefaults"]);
 
   // State persistence across agent sessions
   transferStateFromParent(parent: Agent): void;
@@ -592,14 +634,31 @@ class FileIndexState implements AgentStateSlice<typeof serializationSchema> {
 }
 ```
 
+### Index.ts Exports
+
+```typescript
+export const FileIndexConfigSchema = z.object({
+  defaultProvider: z.string(),
+  providers: z.record(z.string(), z.any())
+});
+
+export const FileIndexAgentConfigSchema = z.object({
+  provider: z.string().optional()
+}).default({});
+
+export {default as FileIndexService} from "./FileIndexService.ts";
+export {default as FileIndexProvider} from "./FileIndexProvider.ts";
+export {default as EphemeralFileIndexProvider} from "./EphemeralFileIndexProvider.ts";
+```
+
 ## Usage Examples
 
 ### Basic Service Setup
 
 ```typescript
-import FileIndexService from './FileIndexService.ts';
-import EphemeralFileIndexProvider from './EphemeralFileIndexProvider.ts';
-import { FileIndexServiceConfigSchema } from './schema.ts';
+import FileIndexService from '@tokenring-ai/file-index/FileIndexService.ts';
+import EphemeralFileIndexProvider from '@tokenring-ai/file-index/EphemeralFileIndexProvider.ts';
+import { FileIndexServiceConfigSchema } from '@tokenring-ai/file-index/schema.ts';
 import { z } from 'zod';
 
 const config: z.input<typeof FileIndexServiceConfigSchema> = {
@@ -622,11 +681,12 @@ app.addServices(fileIndexService);
 ```typescript
 import {TokenRingPlugin} from '@tokenring-ai/app';
 import {z} from 'zod';
-import chatCommands from './chatCommands.ts';
-import EphemeralFileIndexProvider from './EphemeralFileIndexProvider.ts';
-import FileIndexService from './FileIndexService.ts';
+import chatCommands from '@tokenring-ai/file-index/chatCommands.ts';
+import EphemeralFileIndexProvider from '@tokenring-ai/file-index/EphemeralFileIndexProvider.ts';
+import FileIndexService from '@tokenring-ai/file-index/FileIndexService.ts';
 import packageJSON from './package.json' with {type: 'json'};
-import {FileIndexServiceConfigSchema} from './schema.ts';
+import {FileIndexServiceConfigSchema} from '@tokenring-ai/file-index/schema.ts';
+import tools from '@tokenring-ai/file-index/tools.ts';
 
 const packageConfigSchema = z.object({
   fileIndex: FileIndexServiceConfigSchema.optional()
@@ -673,7 +733,7 @@ export default {
 ### Using the Hybrid Search Tool
 
 ```typescript
-import { hybridSearchFileIndex } from './tools.ts';
+import { hybridSearchFileIndex } from '@tokenring-ai/file-index/tools.ts';
 
 // Perform hybrid search with tuned parameters
 const results = await hybridSearchFileIndex.execute(
@@ -725,7 +785,7 @@ app.waitForService(AgentCommandService, agentCommandService =>
 );
 
 // Usage in agent chat:
-// /fileindex search function getUser
+// /fileindex search function.getUser
 // /fileindex provider get
 // /fileindex provider set ephemeral
 // /fileindex provider default
@@ -757,29 +817,10 @@ await fileIndexService.waitReady(agent);
 const results = await fileIndexService.search('user', 10, agent);
 ```
 
-### File Context Management
-
-```typescript
-const fileIndex = agent.requireServiceByType(FileIndexService);
-
-// Set current working file
-fileIndex.setCurrentFile('/path/to/file.ts', agent);
-
-// Get current file
-const currentFile = fileIndex.getCurrentFile(agent);
-console.log('Current file:', currentFile);
-
-// Clear current file context
-fileIndex.clearCurrentFile(agent);
-
-// Close provider and cleanup resources
-await fileIndex.close(agent);
-```
-
 ### Custom Provider Implementation
 
 ```typescript
-import FileIndexProvider, {SearchResult} from './FileIndexProvider.ts';
+import FileIndexProvider, {SearchResult} from '@tokenring-ai/file-index/FileIndexProvider.ts';
 import fs from 'fs-extra';
 import path from 'path';
 
@@ -867,7 +908,7 @@ class CustomFileIndexProvider extends FileIndexProvider {
 ### Agent State Persistence
 
 ```typescript
-import { FileIndexState } from './state/FileIndexState.ts';
+import { FileIndexState } from '@tokenring-ai/file-index/state/FileIndexState.ts';
 
 // State is automatically managed per agent
 const fileIndexService = agent.requireServiceByType(FileIndexService);
@@ -1006,6 +1047,7 @@ const mergedConfig = deepMerge(serviceDefaults, agentConfig.fileIndex);
 - **Result Merging**: Merge behavior is controlled by `mergeRadius` parameter. Larger values increase context but reduce precision
 - **Provider Switching**: Provider selection is session-specific. Changing provider affects only current agent session
 - **Updates**: File modifications are only indexed after processing queue settles (250ms delay)
+- **Default Provider Command**: The `/fileindex provider default` command has a bug where it references `defaultProvider` variable instead of `agent.initialConfig.provider` in the message
 
 ## Future Enhancements
 
