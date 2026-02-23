@@ -1,9 +1,10 @@
 import Agent from "@tokenring-ai/agent/Agent";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
-export async function defaultProvider(remainder: string, agent: Agent): Promise<void> {
+export async function defaultProvider(remainder: string, agent: Agent): Promise<string> {
   agent.mutateState(FileIndexState, state => {
     state.activeProvider = state.initialConfig.provider;
   });
-  agent.infoMessage(`Default provider: ${defaultProvider}`);
+  const provider = agent.getState(FileIndexState).activeProvider;
+  return `Default provider: ${provider}`;
 }

@@ -3,19 +3,17 @@ import type {TreeLeaf} from "@tokenring-ai/agent/question";
 import FileIndexService from "../../../FileIndexService.ts";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
-export async function select(remainder: string, agent: Agent): Promise<void> {
+export async function select(remainder: string, agent: Agent): Promise<string> {
   const fileIndexService = agent.requireServiceByType(FileIndexService);
   const availableProviders = fileIndexService.getAvailableFileIndexProviders();
 
   if (availableProviders.length === 0) {
-    agent.infoMessage("No file index providers are registered.");
-    return;
+    return "No file index providers are registered.";
   }
 
   if (availableProviders.length === 1) {
     fileIndexService.setActiveProvider(availableProviders[0], agent);
-    agent.infoMessage(`Only one provider configured, auto-selecting: ${availableProviders[0]}`);
-    return;
+    return `Only one provider configured, auto-selecting: ${availableProviders[0]}`;
   }
 
   const activeProvider = agent.getState(FileIndexState).activeProvider;
@@ -40,8 +38,8 @@ export async function select(remainder: string, agent: Agent): Promise<void> {
   if (selection) {
     const selectedValue = selection[0];
     fileIndexService.setActiveProvider(selectedValue, agent);
-    agent.infoMessage(`Active provider set to: ${selectedValue}`);
+    return `Active provider set to: ${selectedValue}`;
   } else {
-    agent.infoMessage("Provider selection cancelled.");
+    return "Provider selection cancelled.";
   }
 }
