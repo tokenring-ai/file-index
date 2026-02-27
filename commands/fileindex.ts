@@ -53,6 +53,7 @@ const execute = createSubcommandRouter({
 });
 
 export default {
+  name: "fileindex",
   description,
   execute,
   help,

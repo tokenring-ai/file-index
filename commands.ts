@@ -1,5 +1,5 @@
 import fileindex from "./commands/fileindex.ts";
 
-export default {
+export default [
   fileindex,
-};
+];
