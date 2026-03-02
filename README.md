@@ -14,7 +14,7 @@ The `@tokenring-ai/file-index` package provides file indexing and search capabil
 - **Agent Integration**: Seamless integration with TokenRing AI agents through tools and chat commands
 - **Result Merging**: Advanced search algorithm that merges adjacent results for better context coverage
 - **Chat Commands**: Built-in command interface for managing providers and performing searches
-- **Tool Integration**: Exported tools for hybrid search and semantic search functionality
+- **Tool Integration**: Exported tools for hybrid search functionality
 
 ## Installation
 
@@ -94,7 +94,7 @@ The package follows the standard TokenRing plugin pattern with proper configurat
 ```typescript
 import {TokenRingPlugin} from '@tokenring-ai/app';
 import {z} from 'zod';
-import chatCommands from '@tokenring-ai/file-index/chatCommands.ts';
+import agentCommands from '@tokenring-ai/file-index/commands.ts';
 import EphemeralFileIndexProvider from '@tokenring-ai/file-index/EphemeralFileIndexProvider.ts';
 import FileIndexService from '@tokenring-ai/file-index/FileIndexService.ts';
 import packageJSON from './package.json' with {type: 'json'};
@@ -133,7 +133,7 @@ export default {
       chatService.addTools(tools)
     );
     app.waitForService(AgentCommandService, agentCommandService =>
-      agentCommandService.addAgentCommands(chatCommands)
+      agentCommandService.addAgentCommands(agentCommands)
     );
   },
   config: packageConfigSchema
@@ -152,20 +152,19 @@ pkg/file-index/
 ├── EphemeralFileIndexProvider.ts # In-memory implementation
 ├── FileIndexService.ts           # Service registry for providers
 ├── StringSearchFileIndexService.ts # Alternative file search implementation
-├── chatCommands.ts               # Exports chat commands
+├── commands.ts                   # Exports chat commands
 │   └── commands/
 │       └── fileindex/
-│           ├── fileindex.ts      # Main command router
 │           ├── provider.ts       # Provider command router
 │           ├── search.ts         # Search command implementation
 │           ├── provider/
 │           │   ├── get.ts        # Display current provider
 │           │   ├── set.ts        # Set provider by name
-│           │   ├── default.ts    # Reset to default provider
+│           │   ├── reset.ts      # Reset to default provider
 │           │   └── select.ts     # Interactive provider selection
 ├── tools/
 │   ├── hybridSearchFileIndex.ts  # Hybrid search tool
-│   └── searchFileIndex.ts        # Semantic search tool
+│   └── searchFileIndex.ts        # Semantic search tool (commented out)
 ├── state/
 │   └── FileIndexState.ts         # State management for file index
 ├── util/
@@ -298,7 +297,7 @@ const providers = service.getAvailableFileIndexProviders();
 
 ### StringSearchFileIndexService
 
-Alternative implementation focused on string-based search functionality.
+Alternative implementation focused on string-based search functionality. This service provides a simpler interface for basic string search use cases.
 
 ### FileIndexState
 
@@ -380,7 +379,7 @@ interface HybridSearchResult {
 
 ### searchFileIndex
 
-Semantic search tool using the MariaDB vector database.
+Semantic search tool using the MariaDB vector database. Currently commented out in the tools export but available for future use.
 
 **Tool Definition:**
 
@@ -432,12 +431,12 @@ Set a specific file index provider by name.
 /fileindex provider set ephemeral
 ```
 
-#### /fileindex provider default
+#### /fileindex provider reset
 
 Reset to the default provider from agent configuration.
 
 ```
-/fileindex provider default
+/fileindex provider reset
 ```
 
 #### /fileindex provider select
@@ -681,7 +680,7 @@ app.addServices(fileIndexService);
 ```typescript
 import {TokenRingPlugin} from '@tokenring-ai/app';
 import {z} from 'zod';
-import chatCommands from '@tokenring-ai/file-index/chatCommands.ts';
+import agentCommands from '@tokenring-ai/file-index/commands.ts';
 import EphemeralFileIndexProvider from '@tokenring-ai/file-index/EphemeralFileIndexProvider.ts';
 import FileIndexService from '@tokenring-ai/file-index/FileIndexService.ts';
 import packageJSON from './package.json' with {type: 'json'};
@@ -723,7 +722,7 @@ export default {
 
     // Register chat commands
     app.waitForService(AgentCommandService, agentCommandService =>
-      agentCommandService.addAgentCommands(chatCommands)
+      agentCommandService.addAgentCommands(agentCommands)
     );
   },
   config: packageConfigSchema
@@ -781,14 +780,14 @@ app.waitForService(ChatService, chatService =>
   chatService.addTools(tools)
 );
 app.waitForService(AgentCommandService, agentCommandService =>
-  agentCommandService.addAgentCommands(chatCommands)
+  agentCommandService.addAgentCommands(agentCommands)
 );
 
 // Usage in agent chat:
 // /fileindex search function.getUser
 // /fileindex provider get
 // /fileindex provider set ephemeral
-// /fileindex provider default
+// /fileindex provider reset
 // /fileindex provider select
 ```
 
@@ -858,7 +857,7 @@ class CustomFileIndexProvider extends FileIndexProvider {
       }
     }
 
-    return results.slice(0, limit).sort((a, b) => b.relevance! - a.relevance!);
+    return results.slice(0, limit).sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
   }
 
   async fullTextSearch(query: string, limit?: number): Promise<SearchResult[]> {
@@ -1047,7 +1046,7 @@ const mergedConfig = deepMerge(serviceDefaults, agentConfig.fileIndex);
 - **Result Merging**: Merge behavior is controlled by `mergeRadius` parameter. Larger values increase context but reduce precision
 - **Provider Switching**: Provider selection is session-specific. Changing provider affects only current agent session
 - **Updates**: File modifications are only indexed after processing queue settles (250ms delay)
-- **Default Provider Command**: The `/fileindex provider default` command has a bug where it references `defaultProvider` variable instead of `agent.initialConfig.provider` in the message
+- **searchFileIndex Tool**: The semantic search tool is currently commented out in the tools export and not available for use
 
 ## Future Enhancements
 
