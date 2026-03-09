@@ -13,7 +13,10 @@ Reset the active file index provider to the reset configured value.
 
 /fileindex provider reset`,
   execute: async (_remainder: string, agent: Agent): Promise<string> => {
-    agent.mutateState(FileIndexState, state => { state.activeProvider = state.initialConfig.provider; });
+    const activeProvider = agent.mutateState(FileIndexState, state => {
+      state.reset();
+      return state.activeProvider;
+    });
     return `Default provider: ${agent.getState(FileIndexState).activeProvider}`;
   },
 } satisfies TokenRingAgentCommand;
