@@ -1,13 +1,21 @@
-import Agent from "@tokenring-ai/agent/Agent";
 import {CommandFailedError} from "@tokenring-ai/agent/AgentError";
-import {TokenRingAgentCommand} from "@tokenring-ai/agent/types";
+import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import FileIndexService from "../../FileIndexService.ts";
 
-async function execute(remainder: string, agent: Agent): Promise<string> {
-  if (!remainder?.trim()) throw new CommandFailedError("Usage: /fileindex search <query>");
+const inputSchema = {
+  args: {},
+  prompt: {
+    description: "Search query",
+    required: true,
+  },
+  allowAttachments: false,
+} as const satisfies AgentCommandInputSchema;
+
+async function execute({prompt, agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
+  if (!prompt?.trim()) throw new CommandFailedError("Usage: /fileindex search <query>");
   const fileIndexService = agent.requireServiceByType(FileIndexService);
   await fileIndexService.waitReady(agent);
-  const results = await fileIndexService.search(remainder.trim(), 10, agent);
+  const results = await fileIndexService.search(prompt.trim(), 10, agent);
   if (results.length === 0) return "No results found.";
   const lines = [`Found ${results.length} result(s):`];
   for (const result of results) {
@@ -17,10 +25,15 @@ async function execute(remainder: string, agent: Agent): Promise<string> {
 }
 
 export default {
-  name: "fileindex search", description: "Search across files", help: `# /fileindex search <query>
+  name: "fileindex search", 
+  description: "Search across files", 
+  inputSchema,
+  execute,
+  help: `# /fileindex search <query>
 
 Search for text across all indexed files. Returns up to 10 matching results with file paths and content.
 
 ## Example
 
-/fileindex search function getUser`, execute } satisfies TokenRingAgentCommand;
+/fileindex search function getUser`,
+} satisfies TokenRingAgentCommand<typeof inputSchema>;

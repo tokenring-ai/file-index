@@ -1,10 +1,14 @@
-import Agent from "@tokenring-ai/agent/Agent";
 import type {TreeLeaf} from "@tokenring-ai/agent/question";
-import {TokenRingAgentCommand} from "@tokenring-ai/agent/types";
+import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import FileIndexService from "../../../FileIndexService.ts";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
-async function execute(_remainder: string, agent: Agent): Promise<string> {
+const inputSchema = {
+  args: {},
+  allowAttachments: false,
+} as const satisfies AgentCommandInputSchema;
+
+async function execute({agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
   const fileIndexService = agent.requireServiceByType(FileIndexService);
   const available = fileIndexService.getAvailableFileIndexProviders();
   if (available.length === 0) return "No file index providers are registered.";
@@ -26,10 +30,15 @@ async function execute(_remainder: string, agent: Agent): Promise<string> {
 }
 
 export default {
-  name: "fileindex provider select", description: "Interactively select a provider", help: `# /fileindex provider select
+  name: "fileindex provider select", 
+  description: "Interactively select a provider", 
+  inputSchema,
+  execute,
+  help: `# /fileindex provider select
 
 Interactively select the active file index provider. Auto-selects if only one provider is configured.
 
 ## Example
 
-/fileindex provider select`, execute } satisfies TokenRingAgentCommand;
+/fileindex provider select`,
+} satisfies TokenRingAgentCommand<typeof inputSchema>;
