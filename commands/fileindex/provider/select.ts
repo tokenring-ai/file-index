@@ -25,7 +25,8 @@ async function execute(_remainder: string, agent: Agent): Promise<string> {
   return "Provider selection cancelled.";
 }
 
-export default { name: "fileindex provider select", description: "/fileindex provider select - Interactively select a provider", help: `# /fileindex provider select
+export default {
+  name: "fileindex provider select", description: "Interactively select a provider", help: `# /fileindex provider select
 
 Interactively select the active file index provider. Auto-selects if only one provider is configured.
 

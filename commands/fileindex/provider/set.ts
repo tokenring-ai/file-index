@@ -15,7 +15,8 @@ async function execute(remainder: string, agent: Agent): Promise<string> {
   return `Provider "${providerName}" not found. Available providers: ${available.join(", ")}`;
 }
 
-export default { name: "fileindex provider set", description: "/fileindex provider set - Set the active provider", help: `# /fileindex provider set <name>
+export default {
+  name: "fileindex provider set", description: "Set the active provider", help: `# /fileindex provider set <name>
 
 Set the active file index provider by name.
 

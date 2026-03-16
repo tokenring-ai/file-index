@@ -4,7 +4,7 @@ import {FileIndexState} from "../../../state/FileIndexState.ts";
 
 export default {
   name: "fileindex provider reset",
-  description: "/fileindex provider reset - Reset to default provider",
+  description: "Reset to default provider",
   help: `# /fileindex provider reset
 
 Reset the active file index provider to the reset configured value.

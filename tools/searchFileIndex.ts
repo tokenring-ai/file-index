@@ -35,8 +35,7 @@ async function execute(
   };
 }
 
-const description =
-  "Semantic search for file/document code/text chunks using the MariaDB vector database.";
+const description = "Semantic search for file/document code/text chunks using the MariaDB vector database.";
 
 const inputSchema = z.object({
   query: z

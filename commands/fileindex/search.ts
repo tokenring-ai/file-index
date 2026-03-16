@@ -16,7 +16,8 @@ async function execute(remainder: string, agent: Agent): Promise<string> {
   return lines.join("\n");
 }
 
-export default { name: "fileindex search", description: "/fileindex search - Search across files", help: `# /fileindex search <query>
+export default {
+  name: "fileindex search", description: "Search across files", help: `# /fileindex search <query>
 
 Search for text across all indexed files. Returns up to 10 matching results with file paths and content.
 

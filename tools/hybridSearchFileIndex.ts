@@ -156,8 +156,7 @@ async function execute(
   };
 }
 
-const description =
-  "Hybrid semantic+full-text+keyword search with merging/deduplication. Returns merged relevant code/text blocks.";
+const description = "Hybrid semantic+full-text+keyword search with merging/deduplication. Returns merged relevant code/text blocks.";
 
 const inputSchema = z.object({
   query: z

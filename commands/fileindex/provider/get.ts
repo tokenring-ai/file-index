@@ -4,7 +4,7 @@ import {FileIndexState} from "../../../state/FileIndexState.ts";
 
 export default {
   name: "fileindex provider get",
-  description: "/fileindex provider get - Show active provider",
+  description: "Show active provider",
   help: `# /fileindex provider get
 
 Display the currently active file index provider.
