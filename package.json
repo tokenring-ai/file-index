@@ -13,7 +13,7 @@
     "commander": "^14.0.3",
     "glob-gitignore": "^1.0.15",
     "gpt-tokenizer": "^3.4.0",
-    "mysql2": "^3.19.1",
+    "mysql2": "^3.20.0",
     "sentencex": "^1.0.17",
     "sqlite-vec": "0.1.7-alpha.10",
     "tree-sitter": "^0.25.0",
