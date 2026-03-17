@@ -1,10 +1,7 @@
 import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
-const inputSchema = {
-  args: {},
-  allowAttachments: false,
-} as const satisfies AgentCommandInputSchema;
+const inputSchema = {} as const satisfies AgentCommandInputSchema;
 
 async function execute({agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
   agent.mutateState(FileIndexState, state => {
@@ -18,9 +15,7 @@ export default {
   description: "Reset to default provider",
   inputSchema,
   execute,
-  help: `# /fileindex provider reset
-
-Reset the active file index provider to the reset configured value.
+  help: `Reset the active file index provider to the reset configured value.
 
 ## Example
 

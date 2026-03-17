@@ -3,10 +3,7 @@ import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} f
 import FileIndexService from "../../../FileIndexService.ts";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
-const inputSchema = {
-  args: {},
-  allowAttachments: false,
-} as const satisfies AgentCommandInputSchema;
+const inputSchema = {} as const satisfies AgentCommandInputSchema;
 
 async function execute({agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
   const fileIndexService = agent.requireServiceByType(FileIndexService);
@@ -34,9 +31,7 @@ export default {
   description: "Interactively select a provider", 
   inputSchema,
   execute,
-  help: `# /fileindex provider select
-
-Interactively select the active file index provider. Auto-selects if only one provider is configured.
+  help: `Interactively select the active file index provider. Auto-selects if only one provider is configured.
 
 ## Example
 
