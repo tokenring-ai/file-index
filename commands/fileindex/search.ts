@@ -1,22 +1,15 @@
-import {CommandFailedError} from "@tokenring-ai/agent/AgentError";
 import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import FileIndexService from "../../FileIndexService.ts";
 
 const inputSchema = {
   args: {},
-  positionals: [{
-    name: "query",
-    description: "Search query",
-    required: true,
-    greedy: true,
-  }],
-  allowAttachments: false,
+  remainder: {name: "query", description: "Search query", required: true}
 } as const satisfies AgentCommandInputSchema;
 
-async function execute({positionals: { query }, agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
+async function execute({remainder, agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
   const fileIndexService = agent.requireServiceByType(FileIndexService);
   await fileIndexService.waitReady(agent);
-  const results = await fileIndexService.search(query, 10, agent);
+  const results = await fileIndexService.search(remainder, 10, agent);
   if (results.length === 0) return "No results found.";
   const lines = [`Found ${results.length} result(s):`];
   for (const result of results) {
