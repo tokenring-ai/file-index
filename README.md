@@ -1,6 +1,6 @@
 # @tokenring-ai/file-index
 
-File indexing and search service that adds file contents to chat memory through intelligent search and indexing capabilities.
+Service that add file contents or file names to the chat memory.
 
 ## Overview
 
@@ -619,8 +619,7 @@ Active provider set to: ephemeral
 ```
 
 **Error Handling:**
-- If provider name is empty: `Usage: /fileindex provider set <name>`
-- If provider not found: `Provider "name" not found. Available providers: ephemeral, persistent`
+- If provider name is empty: `Provider "" not found. Available providers: ephemeral, persistent`
 
 #### /fileindex provider reset
 
@@ -666,7 +665,6 @@ Found 3 result(s):
 ```
 
 **Error Handling:**
-- If query is empty: `Usage: /fileindex search <query>`
 - If no results found: `No results found.`
 
 ## Tools
@@ -854,8 +852,7 @@ pkg/file-index/
 │               └── select.ts         # Interactive provider selection
 ├── tools.ts                          # Exports tools
 │   └── tools/
-│       ├── hybridSearchFileIndex.ts  # Hybrid search tool
-│       └── searchFileIndex.ts        # Semantic search tool (commented out)
+│       └── hybridSearchFileIndex.ts  # Hybrid search tool
 ├── state/
 │   └── FileIndexState.ts             # State management for file index
 ├── util/
@@ -886,9 +883,9 @@ All Token Ring packages are referenced as `@tokenring-ai/*` versions from the ca
 | `commander` | ^14.0.3 | Command-line interface |
 | `glob-gitignore` | ^1.0.15 | Gitignore-style pattern matching |
 | `gpt-tokenizer` | ^3.4.0 | Token counting for chunking |
-| `mysql2` | ^3.19.1 | MySQL client |
+| `mysql2` | ^3.20.0 | MySQL client |
 | `sentencex` | ^1.0.17 | Sentence segmentation |
-| `sqlite-vec` | 0.1.7-alpha.10 | Vector database |
+| `sqlite-vec` | 0.1.8-alpha.1 | Vector database |
 | `tree-sitter` | ^0.25.0 | Syntax parsing |
 | `tree-sitter-javascript` | ^0.25.0 | JavaScript grammar |
 
@@ -896,8 +893,8 @@ All Token Ring packages are referenced as `@tokenring-ai/*` versions from the ca
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| `vitest` | ^4.1.0 | Unit testing framework |
-| `typescript` | ^5.9.3 | TypeScript compiler |
+| `vitest` | ^4.1.1 | Unit testing framework |
+| `typescript` | ^6.0.2 | TypeScript compiler |
 | `@types/fs-extra` | ^11.0.4 | Type definitions for fs-extra |
 
 ## Error Handling
@@ -916,8 +913,7 @@ fileIndexService.setActiveProvider('ephemeral', agent);
 
 **Command Failed Errors:**
 
-- Empty query: `Usage: /fileindex search <query>`
-- Empty provider name: `Usage: /fileindex provider set <name>`
+- Empty query: `No results found.`
 - Provider not found: `Provider "name" not found. Available providers: ...`
 
 ### Error Types
@@ -937,7 +933,6 @@ fileIndexService.setActiveProvider('ephemeral', agent);
 - **Result Merging**: Merge behavior is controlled by `mergeRadius` parameter. Larger values increase context but reduce precision
 - **Provider Switching**: Provider selection is session-specific. Changing provider affects only current agent session
 - **Updates**: File modifications are only indexed after processing queue settles (250ms delay)
-- **searchFileIndex Tool**: The semantic search tool is currently commented out in the tools export and not available for use
 
 ## Related Components
 

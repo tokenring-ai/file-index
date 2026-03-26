@@ -26,11 +26,11 @@ async function execute(
   );
   return {
     type: "json",
-    data: hits.map(({path, chunk_index, content, distance}: any) => ({
+    data: hits.map(({path, chunk_index, content, distance}) => ({
       path,
       chunk_index,
       content,
-      score: Math.max(0, Math.min(1, 1 - (distance || 0))),
+      score: Math.max(0, Math.min(1, 1 - (distance ?? 0))),
     }))
   };
 }
