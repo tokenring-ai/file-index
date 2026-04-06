@@ -1,6 +1,6 @@
 {
   "name": "@tokenring-ai/file-index",
-  "description": "Service that add file contents or file names to the chat memory.",
+  "description": "Semantic search and indexing service using Tree-sitter for intelligent code retrieval.",
   "version": "0.2.0",
   "dependencies": {
     "@tokenring-ai/app": "0.2.0",
