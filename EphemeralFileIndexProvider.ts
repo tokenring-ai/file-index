@@ -1,10 +1,13 @@
 import fs from "fs-extra";
-import path from "path";
-import FileIndexProvider, {SearchResult} from "./FileIndexProvider.ts";
+import path from "node:path";
+import FileIndexProvider, {type SearchResult} from "./FileIndexProvider.ts";
 
 export default class EphemeralFileIndexProvider extends FileIndexProvider {
   private currentFile: string | null = null;
-  private fileContents: Map<string, { content: string; chunks: string[]; mtime: number }> = new Map();
+  private fileContents: Map<
+    string,
+    { content: string; chunks: string[]; mtime: number }
+  > = new Map();
   private fileQueue: Set<string> = new Set();
   private timer?: NodeJS.Timeout;
   private initializing: Promise<void> | null = null;
@@ -13,8 +16,9 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     super();
   }
 
-  async start() {
+  start() {
     this.initializing = this.lazyInit();
+    return this.initializing;
   }
 
   onFileChanged(type: string, filePath: string) {
@@ -26,7 +30,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     }
   }
 
-  async waitReady(): Promise<void> {
+  waitReady() {
     if (this.initializing != null) {
       return this.initializing;
     }
@@ -50,7 +54,10 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     });
   }
 
-  async fullTextSearch(query: string, limit: number = 10): Promise<SearchResult[]> {
+  async fullTextSearch(
+    query: string,
+    limit: number = 10,
+  ): Promise<SearchResult[]> {
     await this.waitReady();
 
     if (!query || query.trim() === "") {
@@ -90,10 +97,12 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
       }
     }
 
-    return results.sort((a, b) => (b.relevance || 0) - (a.relevance || 0)).slice(0, limit);
+    return results
+      .sort((a, b) => (b.relevance || 0) - (a.relevance || 0))
+      .slice(0, limit);
   }
 
-  async search(query: string, limit: number = 10): Promise<SearchResult[]> {
+  search(query: string, limit: number = 10): Promise<SearchResult[]> {
     return this.fullTextSearch(query, limit);
   }
 
@@ -109,7 +118,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     return this.currentFile;
   }
 
-  async close() {
+  close() {
     if (this.timer) {
       clearTimeout(this.timer);
     }
@@ -143,7 +152,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
           this.fileQueue.delete(relPath);
           try {
             await this.processFile(relPath);
-          } catch (err) {
+          } catch {
             // Ignore errors for now
           }
         }

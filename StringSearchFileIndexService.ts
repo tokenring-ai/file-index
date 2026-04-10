@@ -1,7 +1,7 @@
-import Agent from "@tokenring-ai/agent/Agent";
-import TokenRingApp from "@tokenring-ai/app";
+import type Agent from "@tokenring-ai/agent/Agent";
+import type TokenRingApp from "@tokenring-ai/app";
 
-import {TokenRingService} from "@tokenring-ai/app/types";
+import type {TokenRingService} from "@tokenring-ai/app/types";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
 
 export default class StringSearchFileIndexService implements TokenRingService {
@@ -10,7 +10,10 @@ export default class StringSearchFileIndexService implements TokenRingService {
 
   private provider: EphemeralFileIndexProvider;
 
-  constructor(private app: TokenRingApp, private baseDirectory?: string) {
+  constructor(
+    private app: TokenRingApp,
+    private baseDirectory?: string,
+  ) {
     this.provider = new EphemeralFileIndexProvider(baseDirectory);
   }
 
@@ -18,9 +21,11 @@ export default class StringSearchFileIndexService implements TokenRingService {
     await this.provider.start();
   }
 
-  async waitReady(agent: Agent) {
+  waitReady(agent: Agent) {
     if (agent) {
-      agent.infoMessage(`[${this.name}] Waiting for index to finish initializing...`);
+      agent.infoMessage(
+        `[${this.name}] Waiting for index to finish initializing...`,
+      );
     }
     return this.provider.waitReady();
   }
@@ -30,11 +35,11 @@ export default class StringSearchFileIndexService implements TokenRingService {
     return this.provider.fullTextSearch(query, limit);
   }
 
-  async search(query: string, limit: number = 10, _agent: Agent) {
+  search(query: string, limit: number = 10, _agent: Agent) {
     return this.provider.search(query, limit);
   }
 
-  async close() {
+  close() {
     return this.provider.close();
   }
 }

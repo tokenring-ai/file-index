@@ -1,16 +1,21 @@
-import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
+import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand,} from "@tokenring-ai/agent/types";
 import FileIndexService from "../../../FileIndexService.ts";
 
 const inputSchema = {
   args: {},
-  positionals: [{
-    name: "providerName",
-    description: "The provider name to set",
-    required: true,
-  }]
+  positionals: [
+    {
+      name: "providerName",
+      description: "The provider name to set",
+      required: true,
+    },
+  ],
 } as const satisfies AgentCommandInputSchema;
 
-async function execute({positionals: {providerName}, agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
+function execute({
+                   positionals: {providerName},
+                   agent,
+                 }: AgentCommandInputType<typeof inputSchema>): string {
   const fileIndexService = agent.requireServiceByType(FileIndexService);
 
   const available = fileIndexService.getAvailableFileIndexProviders();

@@ -1,10 +1,12 @@
-import Agent from "@tokenring-ai/agent/Agent";
-import {TokenRingService} from "@tokenring-ai/app/types";
+import type Agent from "@tokenring-ai/agent/Agent";
+import type {TokenRingService} from "@tokenring-ai/app/types";
 import deepMerge from "@tokenring-ai/utility/object/deepMerge";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
-import {z} from "zod";
-import FileIndexProvider, {SearchResult} from "./FileIndexProvider.ts";
-import {FileIndexAgentConfigSchema, FileIndexServiceConfigSchema} from "./schema.ts";
+import type {MaybePromise} from "bun";
+import type {z} from "zod";
+import type FileIndexProvider from "./FileIndexProvider.ts";
+import type { SearchResult} from "./FileIndexProvider.ts";
+import {FileIndexAgentConfigSchema, type FileIndexServiceConfigSchema,} from "./schema.ts";
 import {FileIndexState} from "./state/FileIndexState.ts";
 
 export default class FileIndexService implements TokenRingService {
@@ -16,16 +18,23 @@ export default class FileIndexService implements TokenRingService {
   registerFileIndexProvider = this.providers.register;
   getAvailableFileIndexProviders = this.providers.getAllItemNames;
 
-  constructor(readonly options: z.output<typeof FileIndexServiceConfigSchema>) {}
+  constructor(
+    readonly options: z.output<typeof FileIndexServiceConfigSchema>,
+  ) {
+  }
 
   attach(agent: Agent): void {
-    const agentConfig = deepMerge(this.options.agentDefaults, agent.getAgentConfigSlice('fileIndex', FileIndexAgentConfigSchema));
+    const agentConfig = deepMerge(
+      this.options.agentDefaults,
+      agent.getAgentConfigSlice("fileIndex", FileIndexAgentConfigSchema),
+    );
     agent.initializeState(FileIndexState, agentConfig);
   }
 
   requireActiveProvider(agent: Agent): FileIndexProvider {
     const activeProvider = agent.getState(FileIndexState).activeProvider;
-    if (! activeProvider) throw new Error("No file index provider has been enabled.");
+    if (!activeProvider)
+      throw new Error("No file index provider has been enabled.");
     return this.providers.requireItemByName(activeProvider);
   }
 
@@ -35,19 +44,27 @@ export default class FileIndexService implements TokenRingService {
     });
   }
 
-  async fullTextSearch(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]> {
+  fullTextSearch(
+    query: string,
+    limit: number = 10,
+    agent: Agent,
+  ): MaybePromise<SearchResult[]> {
     return this.requireActiveProvider(agent).fullTextSearch(query, limit);
   }
 
-  async search(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]> {
+  search(
+    query: string,
+    limit: number = 10,
+    agent: Agent,
+  ): MaybePromise<SearchResult[]> {
     return this.requireActiveProvider(agent).search(query, limit);
   }
 
-  async waitReady(agent: Agent): Promise<void> {
+  waitReady(agent: Agent): MaybePromise<void> {
     return this.requireActiveProvider(agent).waitReady();
   }
 
-  async close(agent: Agent): Promise<void> {
+  close(agent: Agent): MaybePromise<void> {
     return this.requireActiveProvider(agent).close();
   }
 }

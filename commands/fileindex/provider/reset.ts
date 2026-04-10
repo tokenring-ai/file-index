@@ -1,10 +1,12 @@
-import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
+import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand,} from "@tokenring-ai/agent/types";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
 const inputSchema = {} as const satisfies AgentCommandInputSchema;
 
-async function execute({agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
-  agent.mutateState(FileIndexState, state => {
+function execute({
+                   agent,
+                 }: AgentCommandInputType<typeof inputSchema>): string {
+  agent.mutateState(FileIndexState, (state) => {
     state.reset();
   });
   return `Default provider: ${agent.getState(FileIndexState).activeProvider}`;

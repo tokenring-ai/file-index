@@ -1,11 +1,13 @@
 import type {TreeLeaf} from "@tokenring-ai/agent/question";
-import {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
+import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand,} from "@tokenring-ai/agent/types";
 import FileIndexService from "../../../FileIndexService.ts";
 import {FileIndexState} from "../../../state/FileIndexState.ts";
 
 const inputSchema = {} as const satisfies AgentCommandInputSchema;
 
-async function execute({agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> {
+async function execute({
+                         agent,
+                       }: AgentCommandInputType<typeof inputSchema>): Promise<string> {
   const fileIndexService = agent.requireServiceByType(FileIndexService);
   const available = fileIndexService.getAvailableFileIndexProviders();
   if (available.length === 0) return "No file index providers are registered.";
@@ -14,10 +16,21 @@ async function execute({agent}: AgentCommandInputType<typeof inputSchema>): Prom
     return `Only one provider configured, auto-selecting: ${available[0]}`;
   }
   const activeProvider = agent.getState(FileIndexState).activeProvider;
-  const tree: TreeLeaf[] = available.map(name => ({ name: `${name}${name === activeProvider ? " (current)" : ""}`, value: name }));
+  const tree: TreeLeaf[] = available.map((name) => ({
+    name: `${name}${name === activeProvider ? " (current)" : ""}`,
+    value: name,
+  }));
   const selection = await agent.askQuestion({
     message: "Select an active file index provider",
-    question: { type: 'treeSelect', label: "FileIndex Provider Selection", key: "result", defaultValue: activeProvider ? [activeProvider] : undefined, minimumSelections: 1, maximumSelections: 1, tree },
+    question: {
+      type: "treeSelect",
+      label: "FileIndex Provider Selection",
+      key: "result",
+      defaultValue: activeProvider ? [activeProvider] : undefined,
+      minimumSelections: 1,
+      maximumSelections: 1,
+      tree,
+    },
   });
   if (selection) {
     fileIndexService.setActiveProvider(selection[0], agent);
@@ -27,8 +40,8 @@ async function execute({agent}: AgentCommandInputType<typeof inputSchema>): Prom
 }
 
 export default {
-  name: "fileindex provider select", 
-  description: "Interactively select a provider", 
+  name: "fileindex provider select",
+  description: "Interactively select a provider",
   inputSchema,
   execute,
   help: `Interactively select the active file index provider. Auto-selects if only one provider is configured.

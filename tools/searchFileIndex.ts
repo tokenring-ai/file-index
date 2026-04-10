@@ -1,5 +1,5 @@
-import Agent from "@tokenring-ai/agent/Agent";
-import {TokenRingToolDefinition, type TokenRingToolJSONResult} from "@tokenring-ai/chat/schema";
+import type Agent from "@tokenring-ai/agent/Agent";
+import type {TokenRingToolDefinition, TokenRingToolJSONResult,} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
@@ -12,7 +12,6 @@ async function execute(
   {query, k = 5}: z.output<typeof inputSchema>,
   agent: Agent,
 ): Promise<TokenRingToolJSONResult<any[]>> {
-
   const fileIndex = agent.requireServiceByType(FileIndexService);
 
   if (!query) {
@@ -31,11 +30,12 @@ async function execute(
       chunk_index,
       content,
       score: Math.max(0, Math.min(1, 1 - (distance ?? 0))),
-    }))
+    })),
   };
 }
 
-const description = "Semantic search for file/document code/text chunks using the MariaDB vector database.";
+const description =
+  "Semantic search for file/document code/text chunks using the MariaDB vector database.";
 
 const inputSchema = z.object({
   query: z
@@ -51,5 +51,9 @@ const inputSchema = z.object({
 });
 
 export default {
-  name, displayName, description, inputSchema, execute,
+  name,
+  displayName,
+  description,
+  inputSchema,
+  execute,
 } satisfies TokenRingToolDefinition<typeof inputSchema>;

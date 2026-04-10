@@ -1,8 +1,11 @@
 /**
  * Computes the starting line numbers for each chunk in the original text
  */
-export function computeChunkLineStarts(text: string, chunks: string[]): number[] {
-  let lineOffsets: number[] = [0];
+export function computeChunkLineStarts(
+  text: string,
+  chunks: string[],
+): number[] {
+  const lineOffsets: number[] = [0];
   let pos = 0;
   for (const chunk of chunks) {
     const idx = text.indexOf(chunk, pos);

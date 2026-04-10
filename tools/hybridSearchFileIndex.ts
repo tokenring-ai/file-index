@@ -1,5 +1,5 @@
-import Agent from "@tokenring-ai/agent/Agent";
-import {TokenRingToolDefinition, type TokenRingToolJSONResult} from "@tokenring-ai/chat/schema";
+import type Agent from "@tokenring-ai/agent/Agent";
+import type {TokenRingToolDefinition, TokenRingToolJSONResult,} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
@@ -84,7 +84,9 @@ async function execute(
     ...Array.from(allHits.values()).map((h: any) => h.fullTextScore),
   );
   const rescored = Array.from(allHits.values()).map((hit: any) => {
-    const normalizedFullText = maxFullText ? hit.fullTextScore / maxFullText : 0;
+    const normalizedFullText = maxFullText
+      ? hit.fullTextScore / maxFullText
+      : 0;
     const hybridScore =
       (1 - textWeight - fullTextWeight) * hit.embScore +
       textWeight * hit.textScore +
@@ -93,12 +95,14 @@ async function execute(
   });
 
   // Sort by hybrid score
-  const sorted = rescored.sort((a: any, b: any) => b.hybridScore - a.hybridScore);
+  const sorted = rescored.sort(
+    (a: any, b: any) => b.hybridScore - a.hybridScore,
+  );
 
   // Deduplicate and merge overlapping/adjacent chunks (per file)
   const byFile: Record<string, any[]> = {};
   for (const hit of sorted) {
-    const {path, chunk_index} = hit;
+    const {path} = hit;
     if (!byFile[path]) byFile[path] = [];
     byFile[path].push(hit);
   }
@@ -125,7 +129,9 @@ async function execute(
   // For each block, get the best scoring chunk and concatenate contents
   const results = mergedBlocks.map(({path, indices}) => {
     const blockChunks = indices
-      .map((idx) => sorted.find((h: any) => h.path === path && h.chunk_index === idx))
+      .map((idx) =>
+        sorted.find((h: any) => h.path === path && h.chunk_index === idx),
+      )
       .filter(Boolean) as any[];
 
     const content = blockChunks.map((b) => b.content).join("\n");
@@ -152,11 +158,12 @@ async function execute(
   );
   return {
     type: "json",
-    data: finalResults
+    data: finalResults,
   };
 }
 
-const description = "Hybrid semantic+full-text+keyword search with merging/deduplication. Returns merged relevant code/text blocks.";
+const description =
+  "Hybrid semantic+full-text+keyword search with merging/deduplication. Returns merged relevant code/text blocks.";
 
 const inputSchema = z.object({
   query: z
@@ -187,5 +194,9 @@ const inputSchema = z.object({
 });
 
 export default {
-  name, displayName, description, inputSchema, execute,
+  name,
+  displayName,
+  description,
+  inputSchema,
+  execute,
 } satisfies TokenRingToolDefinition<typeof inputSchema>;

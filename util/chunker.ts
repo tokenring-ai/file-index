@@ -1,5 +1,5 @@
 import {decode, encode} from "gpt-tokenizer/encoding/cl100k_base";
-// @ts-ignore
+// @ts-expect-error
 import segment from "sentencex";
 
 const DEFAULT_MAX = 256;
@@ -18,11 +18,16 @@ type SentenceItem = string | { text: string; [key: string]: any };
  */
 export function chunkText(
   text: string,
-  {maxTokens = DEFAULT_MAX, overlapTokens = DEFAULT_OVERLAP}: ChunkOptions = {},
+  {
+    maxTokens = DEFAULT_MAX,
+    overlapTokens = DEFAULT_OVERLAP,
+  }: ChunkOptions = {},
 ): string[] {
-  if (!text || !text.trim()) return [];
+  if (!text?.trim()) return [];
 
-  const sentences = segment("en", text).map((s: SentenceItem) => (typeof s === 'string' ? s : s.text || ''));
+  const sentences = segment("en", text).map((s: SentenceItem) =>
+    typeof s === "string" ? s : s.text || "",
+  );
   const chunks: string[] = [];
   let current: string[] = [],
     currentTok = 0;
