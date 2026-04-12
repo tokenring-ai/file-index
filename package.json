@@ -7,17 +7,7 @@
     "@tokenring-ai/chat": "0.2.0",
     "zod": "^4.3.6",
     "@tokenring-ai/agent": "0.2.0",
-    "@tokenring-ai/filesystem": "0.2.0",
     "@tokenring-ai/utility": "0.2.0",
-    "chokidar": "^5.0.0",
-    "commander": "^14.0.3",
-    "glob-gitignore": "^1.0.15",
-    "gpt-tokenizer": "^3.4.0",
-    "mysql2": "^3.20.0",
-    "sentencex": "^1.0.17",
-    "sqlite-vec": "0.1.9",
-    "tree-sitter": "^0.25.0",
-    "tree-sitter-javascript": "^0.25.0",
     "fs-extra": "^11.3.4"
   },
   "devDependencies": {
