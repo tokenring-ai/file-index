@@ -1,4 +1,4 @@
-import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand,} from "@tokenring-ai/agent/types";
+import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import FileIndexService from "../../../FileIndexService.ts";
 
 const inputSchema = {

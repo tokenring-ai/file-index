@@ -6,7 +6,7 @@ import type {MaybePromise} from "bun";
 import type {z} from "zod";
 import type FileIndexProvider from "./FileIndexProvider.ts";
 import type { SearchResult} from "./FileIndexProvider.ts";
-import {FileIndexAgentConfigSchema, type FileIndexServiceConfigSchema,} from "./schema.ts";
+import {FileIndexAgentConfigSchema, type FileIndexServiceConfigSchema} from "./schema.ts";
 import {FileIndexState} from "./state/FileIndexState.ts";
 
 export default class FileIndexService implements TokenRingService {

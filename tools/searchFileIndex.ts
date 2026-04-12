@@ -1,5 +1,5 @@
 import type Agent from "@tokenring-ai/agent/Agent";
-import type {TokenRingToolDefinition, TokenRingToolJSONResult,} from "@tokenring-ai/chat/schema";
+import type {TokenRingToolDefinition, TokenRingToolResult} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
@@ -11,7 +11,7 @@ const displayName = "FileIndex/searchFileIndex";
 async function execute(
   {query, k = 5}: z.output<typeof inputSchema>,
   agent: Agent,
-): Promise<TokenRingToolJSONResult<any[]>> {
+): Promise<TokenRingToolResult> {
   const fileIndex = agent.requireServiceByType(FileIndexService);
 
   if (!query) {
@@ -24,13 +24,8 @@ async function execute(
     `[${name}] Found ${hits.length} matching chunks for query: ${query}\n`,
   );
   return {
-    type: "json",
-    data: hits.map(({path, chunk_index, content, distance}) => ({
-      path,
-      chunk_index,
-      content,
-      score: Math.max(0, Math.min(1, 1 - (distance ?? 0))),
-    })),
+    summary: `Found ${hits.length} matching chunk(s) for query: ${query}`,
+    result: JSON.stringify(hits.map(({path, chunk_index, content, distance}) => ({path, chunk_index, content, score: Math.max(0, Math.min(1, 1 - (distance ?? 0)))}))),
   };
 }
 
