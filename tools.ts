@@ -2,6 +2,6 @@
 
 import hybridSearchFileIndex from "./tools/hybridSearchFileIndex.ts";
 
-export default {
+export default [
   hybridSearchFileIndex,
-};
+];

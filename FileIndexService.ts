@@ -15,8 +15,8 @@ export default class FileIndexService implements TokenRingService {
 
   private providers = new KeyedRegistry<FileIndexProvider>();
 
-  registerFileIndexProvider = this.providers.register;
-  getAvailableFileIndexProviders = this.providers.getAllItemNames;
+  registerFileIndexProvider = this.providers.set;
+  getAvailableFileIndexProviders = this.providers.keysArray;
 
   constructor(
     readonly options: z.output<typeof FileIndexServiceConfigSchema>,
@@ -35,7 +35,7 @@ export default class FileIndexService implements TokenRingService {
     const activeProvider = agent.getState(FileIndexState).activeProvider;
     if (!activeProvider)
       throw new Error("No file index provider has been enabled.");
-    return this.providers.requireItemByName(activeProvider);
+    return this.providers.require(activeProvider);
   }
 
   setActiveProvider(name: string, agent: Agent): void {
