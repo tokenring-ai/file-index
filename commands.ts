@@ -4,10 +4,4 @@ import providerSelect from "./commands/fileindex/provider/select.ts";
 import providerSet from "./commands/fileindex/provider/set.ts";
 import search from "./commands/fileindex/search.ts";
 
-export default [
-  providerGet,
-  providerSet,
-  providerSelect,
-  providerReset,
-  search,
-];
+export default [providerGet, providerSet, providerSelect, providerReset, search];

@@ -1,11 +1,11 @@
-import type {MaybePromise} from "bun";
+import type { MaybePromise } from "bun";
 
 export interface SearchResult {
   path: string;
   chunk_index: number;
   content: string;
-  relevance?: number;
-  distance?: number;
+  relevance?: number | undefined;
+  distance?: number | undefined;
 }
 
 /**
@@ -16,10 +16,7 @@ export default abstract class FileIndexProvider {
   // Core search methods
   abstract search(query: string, limit?: number): MaybePromise<SearchResult[]>;
 
-  abstract fullTextSearch(
-    query: string,
-    limit?: number,
-  ): MaybePromise<SearchResult[]>;
+  abstract fullTextSearch(query: string, limit?: number): MaybePromise<SearchResult[]>;
 
   // Lifecycle methods
   abstract waitReady(): MaybePromise<void>;

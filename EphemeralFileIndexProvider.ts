@@ -1,13 +1,10 @@
-import fs from "fs-extra";
 import path from "node:path";
-import FileIndexProvider, {type SearchResult} from "./FileIndexProvider.ts";
+import fs from "fs-extra";
+import FileIndexProvider, { type SearchResult } from "./FileIndexProvider.ts";
 
 export default class EphemeralFileIndexProvider extends FileIndexProvider {
   private currentFile: string | null = null;
-  private fileContents: Map<
-    string,
-    { content: string; chunks: string[]; mtime: number }
-  > = new Map();
+  private fileContents: Map<string, { content: string; chunks: string[]; mtime: number }> = new Map();
   private fileQueue: Set<string> = new Set();
   private timer?: NodeJS.Timeout;
   private initializing: Promise<void> | null = null;
@@ -54,10 +51,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     });
   }
 
-  async fullTextSearch(
-    query: string,
-    limit: number = 10,
-  ): Promise<SearchResult[]> {
+  async fullTextSearch(query: string, limit: number = 10): Promise<SearchResult[]> {
     await this.waitReady();
 
     if (!query || query.trim() === "") {
@@ -68,7 +62,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     const normalizedQuery = query.toLowerCase();
 
     for (const [filePath, fileData] of this.fileContents.entries()) {
-      const {chunks} = fileData;
+      const { chunks } = fileData;
 
       for (let i = 0; i < chunks.length; i++) {
         if (results.length >= limit) break;
@@ -77,14 +71,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
         const lowerChunk = chunk.toLowerCase();
 
         if (lowerChunk.includes(normalizedQuery)) {
-          const count = (
-            lowerChunk.match(
-              new RegExp(
-                normalizedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-                "g",
-              ),
-            ) || []
-          ).length;
+          const count = (lowerChunk.match(new RegExp(normalizedQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []).length;
           const relevance = count * (1 + 1 / chunk.length);
 
           results.push({
@@ -97,9 +84,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
       }
     }
 
-    return results
-      .sort((a, b) => (b.relevance || 0) - (a.relevance || 0))
-      .slice(0, limit);
+    return results.sort((a, b) => (b.relevance || 0) - (a.relevance || 0)).slice(0, limit);
   }
 
   search(query: string, limit: number = 10): Promise<SearchResult[]> {

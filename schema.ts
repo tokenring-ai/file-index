@@ -1,8 +1,8 @@
-import {z} from "zod";
+import { z } from "zod";
 
 export const FileIndexAgentConfigSchema = z
   .object({
-    provider: z.string().optional(),
+    provider: z.string().exactOptional(),
   })
   .default({});
 
@@ -15,5 +15,5 @@ export const FileIndexServiceConfigSchema = z.object({
     .object({
       provider: z.string(),
     })
-    .default({provider: "ephemeral"}),
+    .default({ provider: "ephemeral" }),
 });

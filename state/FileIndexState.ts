@@ -1,22 +1,16 @@
-import type {Agent} from "@tokenring-ai/agent";
-import {AgentStateSlice} from "@tokenring-ai/agent/types";
-import {z} from "zod";
-import type {FileIndexServiceConfigSchema} from "../schema.ts";
+import type { Agent } from "@tokenring-ai/agent";
+import { AgentStateSlice } from "@tokenring-ai/agent/types";
+import { z } from "zod";
+import type { FileIndexServiceConfigSchema } from "../schema.ts";
 
 const serializationSchema = z.object({
   activeProvider: z.string().nullable(),
 });
 
-export class FileIndexState extends AgentStateSlice<
-  typeof serializationSchema
-> {
+export class FileIndexState extends AgentStateSlice<typeof serializationSchema> {
   activeProvider: string | null;
 
-  constructor(
-    readonly initialConfig: z.output<
-      typeof FileIndexServiceConfigSchema
-    >["agentDefaults"],
-  ) {
+  constructor(readonly initialConfig: z.output<typeof FileIndexServiceConfigSchema>["agentDefaults"]) {
     super("FileIndexState", serializationSchema);
     this.activeProvider = initialConfig.provider;
   }
@@ -30,7 +24,7 @@ export class FileIndexState extends AgentStateSlice<
   }
 
   serialize(): z.output<typeof serializationSchema> {
-    return {activeProvider: this.activeProvider};
+    return { activeProvider: this.activeProvider };
   }
 
   deserialize(data: z.output<typeof serializationSchema>): void {

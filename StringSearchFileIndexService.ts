@@ -1,7 +1,7 @@
 import type Agent from "@tokenring-ai/agent/Agent";
 import type TokenRingApp from "@tokenring-ai/app";
 
-import type {TokenRingService} from "@tokenring-ai/app/types";
+import type { TokenRingService } from "@tokenring-ai/app/types";
 import EphemeralFileIndexProvider from "./EphemeralFileIndexProvider.ts";
 
 export default class StringSearchFileIndexService implements TokenRingService {
@@ -23,9 +23,7 @@ export default class StringSearchFileIndexService implements TokenRingService {
 
   waitReady(agent: Agent) {
     if (agent) {
-      agent.infoMessage(
-        `[${this.name}] Waiting for index to finish initializing...`,
-      );
+      agent.infoMessage(`[${this.name}] Waiting for index to finish initializing...`);
     }
     return this.provider.waitReady();
   }
