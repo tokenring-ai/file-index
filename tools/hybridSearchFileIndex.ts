@@ -2,6 +2,7 @@ import type Agent from "@tokenring-ai/agent/Agent";
 import type {TokenRingToolDefinition, TokenRingToolResult} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import FileIndexService from "../FileIndexService.ts";
+import type {SearchResult} from "../FileIndexProvider.ts";
 
 const name = "file-index_hybridSearchFileIndex";
 const displayName = "FileIndex/hybridSearchFileIndex";
@@ -22,9 +23,6 @@ async function execute(
   agent: Agent,
 ): Promise<TokenRingToolResult> {
   const fileIndex = agent.requireServiceByType(FileIndexService);
-  if (!query) {
-    throw new Error(`[${name}] Missing query parameter`);
-  }
 
   // Get results from both search methods
   const [embeddingHits, fullTextHits] = await Promise.all([
@@ -42,7 +40,15 @@ async function execute(
   }
 
   // Combine and normalize scores
-  const allHits = new Map<string, any>();
+  interface EnrichedHit extends SearchResult {
+    embScore: number;
+    fullTextScore: number;
+    textScore: number;
+  }
+  interface HitWithHybridScore extends EnrichedHit {
+    hybridScore: number;
+  }
+  const allHits = new Map<string, EnrichedHit>();
 
   // Process embedding hits
   for (const hit of embeddingHits) {
@@ -60,12 +66,12 @@ async function execute(
     const key = `${hit.path}-${hit.chunk_index}`;
     const existing = allHits.get(key);
     if (existing) {
-      existing.fullTextScore = hit.relevance;
+      existing.fullTextScore = hit.relevance ?? 0;
     } else {
       allHits.set(key, {
         ...hit,
         embScore: 0,
-        fullTextScore: hit.relevance,
+        fullTextScore: hit.relevance ?? 0,
         textScore: bm25ish(hit.content),
       });
     }
@@ -73,9 +79,9 @@ async function execute(
 
   // Normalize scores and compute hybrid score
   const maxFullText = Math.max(
-    ...Array.from(allHits.values()).map((h: any) => h.fullTextScore),
+    ...Array.from(allHits.values()).map((h: EnrichedHit) => h.fullTextScore),
   );
-  const rescored = Array.from(allHits.values()).map((hit: any) => {
+  const rescored = Array.from(allHits.values()).map((hit: EnrichedHit): HitWithHybridScore => {
     const normalizedFullText = maxFullText
       ? hit.fullTextScore / maxFullText
       : 0;
@@ -88,11 +94,11 @@ async function execute(
 
   // Sort by hybrid score
   const sorted = rescored.sort(
-    (a: any, b: any) => b.hybridScore - a.hybridScore,
+    (a: HitWithHybridScore, b: HitWithHybridScore) => b.hybridScore - a.hybridScore,
   );
 
   // Deduplicate and merge overlapping/adjacent chunks (per file)
-  const byFile: Record<string, any[]> = {};
+  const byFile: Record<string, HitWithHybridScore[]> = {};
   for (const hit of sorted) {
     const {path} = hit;
     if (!byFile[path]) byFile[path] = [];
@@ -122,9 +128,9 @@ async function execute(
   const results = mergedBlocks.map(({path, indices}) => {
     const blockChunks = indices
       .map((idx) =>
-        sorted.find((h: any) => h.path === path && h.chunk_index === idx),
+        sorted.find((h: HitWithHybridScore) => h.path === path && h.chunk_index === idx),
       )
-      .filter(Boolean) as any[];
+      .filter((h): h is HitWithHybridScore => h !== undefined);
 
     const content = blockChunks.map((b) => b.content).join("\n");
     const hybridScore = Math.max(...blockChunks.map((b) => b.hybridScore));
