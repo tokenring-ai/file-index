@@ -36,9 +36,11 @@ async function execute(
     fullTextScore: number;
     textScore: number;
   }
+
   interface HitWithHybridScore extends EnrichedHit {
     hybridScore: number;
   }
+
   const allHits = new Map<string, EnrichedHit>();
 
   // Process embedding hits

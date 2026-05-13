@@ -4,8 +4,10 @@ import deepMerge from "@tokenring-ai/utility/object/deepMerge";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import type { MaybePromise } from "bun";
 import type { z } from "zod";
+
 import type FileIndexProvider from "./FileIndexProvider.ts";
 import type { SearchResult } from "./FileIndexProvider.ts";
+
 import { FileIndexAgentConfigSchema, type FileIndexServiceConfigSchema } from "./schema.ts";
 import { FileIndexState } from "./state/FileIndexState.ts";
 
