@@ -1,6 +1,6 @@
 import type Agent from "@tokenring-ai/agent/Agent";
 import type { TokenRingService } from "@tokenring-ai/app/types";
-import deepMerge from "@tokenring-ai/utility/object/deepMerge";
+import deepClone from "@tokenring-ai/utility/object/deepClone";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import type { MaybePromise } from "bun";
 import type { z } from "zod";
@@ -23,7 +23,7 @@ export default class FileIndexService implements TokenRingService {
   constructor(readonly options: z.output<typeof FileIndexServiceConfigSchema>) {}
 
   attach(agent: Agent): void {
-    const agentConfig = deepMerge(this.options.agentDefaults, agent.getAgentConfigSlice("fileIndex", FileIndexAgentConfigSchema));
+    const agentConfig = deepClone(this.options.agentDefaults, agent.getAgentConfigSlice("fileIndex", FileIndexAgentConfigSchema));
     agent.initializeState(FileIndexState, agentConfig);
   }
 
