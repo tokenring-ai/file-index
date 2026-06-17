@@ -9,7 +9,7 @@ import FileIndexService from "../FileIndexService.ts";
 const name = "file-index_searchFileIndex";
 const displayName = "FileIndex/searchFileIndex";
 
-async function execute({ query, k = 5 }: z.output<typeof inputSchema>, agent: Agent): Promise<TokenRingToolResult> {
+async function execute({ query, k }: z.output<typeof inputSchema>, agent: Agent): Promise<TokenRingToolResult> {
   const fileIndex = agent.requireServiceByType(FileIndexService);
 
   if (!query) {
