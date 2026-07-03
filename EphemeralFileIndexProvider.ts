@@ -1,5 +1,5 @@
-import path from "node:path";
 import fs from "fs-extra";
+import path from "node:path";
 import FileIndexProvider, { type SearchResult } from "./FileIndexProvider.ts";
 
 export default class EphemeralFileIndexProvider extends FileIndexProvider {
@@ -67,7 +67,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
       for (let i = 0; i < chunks.length; i++) {
         if (results.length >= limit) break;
 
-        const chunk = chunks[i];
+        const chunk = chunks[i]!;
         const lowerChunk = chunk.toLowerCase();
 
         if (lowerChunk.includes(normalizedQuery)) {
@@ -133,7 +133,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     for (let i = 0; i < parallelTasks; i++) {
       promises[i] = (async (files: string[], i: number) => {
         for (; i < files.length; i += parallelTasks) {
-          const relPath = files[i];
+          const relPath = files[i]!;
           this.fileQueue.delete(relPath);
           try {
             await this.processFile(relPath);

@@ -12,10 +12,7 @@ const displayName = "FileIndex/hybridSearchFileIndex";
  *
  * Combines: (1) embedding similarity (2) full-text search (3) token overlap
  */
-async function execute(
-  { query, topK, textWeight, fullTextWeight, mergeRadius }: z.output<typeof inputSchema>,
-  agent: Agent,
-): Promise<TokenRingToolResult> {
+async function execute({ query, topK, textWeight, fullTextWeight, mergeRadius }: z.output<typeof inputSchema>, agent: Agent): Promise<TokenRingToolResult> {
   const fileIndex = agent.requireServiceByType(FileIndexService);
 
   // Get results from both search methods
@@ -90,9 +87,9 @@ async function execute(
   }
 
   const mergedBlocks: { path: string; indices: number[] }[] = [];
-  for (const path in byFile) {
+  for (const [path, hit] of Object.entries(byFile)) {
     // Sort chunk indices and merge adjacent/nearby
-    const ranges = byFile[path].map(h => h.chunk_index).sort((a: number, b: number) => a - b);
+    const ranges = hit.map(h => h.chunk_index).sort((a: number, b: number) => a - b);
     let group: number[] = [];
     let last: number | null = null;
     for (const idx of ranges) {

@@ -22,9 +22,7 @@ export default class StringSearchFileIndexService implements TokenRingService {
   }
 
   waitReady(agent: Agent) {
-    if (agent) {
-      agent.infoMessage(`[${this.name}] Waiting for index to finish initializing...`);
-    }
+    agent.infoMessage(`[${this.name}] Waiting for index to finish initializing...`);
     return this.provider.waitReady();
   }
 
