@@ -1,5 +1,6 @@
 import type Agent from "@tokenring-ai/agent/Agent";
 import type { TokenRingToolDefinition, TokenRingToolResult } from "@tokenring-ai/chat/schema";
+import { ToolCallError } from "@tokenring-ai/chat/util/tokenRingTool";
 import { z } from "zod";
 import FileIndexService from "../FileIndexService.ts";
 
@@ -13,7 +14,7 @@ async function execute({ query, k }: z.output<typeof inputSchema>, agent: Agent)
   const fileIndex = agent.requireServiceByType(FileIndexService);
 
   if (!query) {
-    throw new Error(`[${name}] Missing query parameter`);
+    throw new ToolCallError(name, `Missing query parameter`);
   }
 
   const hits = await fileIndex.search(query, k, agent);

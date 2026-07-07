@@ -1,5 +1,5 @@
-import fs from "fs-extra";
 import path from "node:path";
+import fs from "fs-extra";
 import FileIndexProvider, { type SearchResult } from "./FileIndexProvider.ts";
 
 export default class EphemeralFileIndexProvider extends FileIndexProvider {

@@ -1,5 +1,6 @@
 import type Agent from "@tokenring-ai/agent/Agent";
 import type { TokenRingService } from "@tokenring-ai/app/types";
+import { ConfigurationError } from "@tokenring-ai/app/types";
 import deepClone from "@tokenring-ai/utility/object/deepClone";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import type { MaybePromise } from "bun";
@@ -29,7 +30,7 @@ export default class FileIndexService implements TokenRingService {
 
   requireActiveProvider(agent: Agent): FileIndexProvider {
     const activeProvider = agent.getState(FileIndexState).activeProvider;
-    if (!activeProvider) throw new Error("No file index provider has been enabled.");
+    if (!activeProvider) throw new ConfigurationError(this.name, "No file index provider has been enabled.");
     return this.providers.require(activeProvider);
   }
 
