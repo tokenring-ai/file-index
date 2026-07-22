@@ -18,10 +18,10 @@ async function execute({ query, k }: z.output<typeof inputSchema>, agent: Agent)
   }
 
   const hits = await fileIndex.search(query, k, agent);
-  // Each hit has: {path, chunk_index, content, distance, ...}
-  agent.infoMessage(`[${name}] Found ${hits.length} matching chunks for query: ${query}\n`);
+
   return {
-    summary: `Found ${hits.length} matching chunk(s) for query: ${query}`,
+    failed: hits.length === 0,
+    message: `**File Index** Found ${hits.length} matches for ${query}`,
     result: JSON.stringify(
       hits.map(({ path, chunk_index, content, distance }) => ({ path, chunk_index, content, score: Math.max(0, Math.min(1, 1 - (distance ?? 0))) })),
     ),

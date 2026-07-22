@@ -126,9 +126,9 @@ async function execute({ query, topK, textWeight, fullTextWeight, mergeRadius }:
   // Sort blocks by score, return topK
   const finalResults = results.sort((a, b) => b.hybridScore - a.hybridScore).slice(0, topK);
 
-  agent.infoMessage(`[${name}] Hybrid+merge search for: "${query}" => ${finalResults.length} merged regions.\n`);
   return {
-    summary: `Hybrid search found ${finalResults.length} result(s) for "${query}"`,
+    failed: finalResults.length === 0,
+    message: `**File Index** Found ${finalResults.length} hits for search ${query}`,
     result: JSON.stringify(finalResults),
   };
 }
