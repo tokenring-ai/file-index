@@ -1,11 +1,12 @@
 import path from "node:path";
+import EnhancedSet from "@tokenring-ai/utility/set/enhancedSet";
 import fs from "fs-extra";
 import FileIndexProvider, { type SearchResult } from "./FileIndexProvider.ts";
 
 export default class EphemeralFileIndexProvider extends FileIndexProvider {
   private currentFile: string | null = null;
   private fileContents: Map<string, { content: string; chunks: string[]; mtime: number }> = new Map();
-  private fileQueue: Set<string> = new Set();
+  private fileQueue = new EnhancedSet<string>();
   private timer?: NodeJS.Timeout;
   private initializing: Promise<void> | null = null;
 
@@ -61,7 +62,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
     const results: SearchResult[] = [];
     const normalizedQuery = query.toLowerCase();
 
-    for (const [filePath, fileData] of this.fileContents.entries()) {
+    for (const [filePath, fileData] of this.fileContents) {
       const { chunks } = fileData;
 
       for (let i = 0; i < chunks.length; i++) {
@@ -126,7 +127,7 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
   }
 
   private async processFiles() {
-    const files = Array.from(this.fileQueue.keys());
+    const files = this.fileQueue.valuesArray();
     const parallelTasks = 10;
     const promises: Promise<void>[] = [];
 

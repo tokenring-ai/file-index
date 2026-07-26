@@ -4,9 +4,15 @@ File indexing and search service for TokenRing AI agents.
 
 ## Overview
 
-The `@tokenring-ai/file-index` package provides file indexing and search capabilities for TokenRing AI agents. It enables agents to index project files and perform efficient searches across codebases using full-text matching with relevance scoring and intelligent result merging.
+The `@tokenring-ai/file-index` package provides file indexing and search
+capabilities for TokenRing AI agents. It enables agents to index project files
+and perform efficient searches across codebases using full-text matching with
+relevance scoring and intelligent result merging.
 
-The package implements a provider architecture that allows for different storage backends, with an in-memory ephemeral provider currently available. It integrates seamlessly with TokenRing agents through tools, chat commands, and state management.
+The package implements a provider architecture that allows for different storage
+backends, with an in-memory ephemeral provider currently available. It
+integrates seamlessly with TokenRing agents through tools, chat commands, and
+state management.
 
 ### Key Features
 
@@ -50,9 +56,18 @@ bun install @tokenring-ai/file-index
 
 ## Tools
 
-| Tool                                | Description                                           |
-| ----------------------------------- | ----------------------------------------------------- |
-| `file-index_hybridSearchFileIndex` | Hybrid search combining full-text and token overlap scoring |
+| Tool                                | Display Name                        | Description                                                        |
+| ----------------------------------- | ----------------------------------- | ------------------------------------------------------------------ |
+| `file-index_hybridSearchFileIndex`  | FileIndex/hybridSearchFileIndex     | Hybrid search combining full-text and token overlap scoring        |
+
+### Unexported Tools
+
+The following tool implementation exists in the codebase but is not exported in
+the main tools array:
+
+| Tool                            | Display Name                  | Description                                                    |
+| ------------------------------- | ----------------------------- | -------------------------------------------------------------- |
+| `file-index_searchFileIndex`    | FileIndex/searchFileIndex     | Semantic search for file/document code/text chunks             |
 
 ## Configuration
 
@@ -66,9 +81,9 @@ fileIndex:
 
 ### Configuration Options
 
-| Field                        | Type   | Default     | Description                      |
-| ---------------------------- | ------ | ----------- | -------------------------------- |
-| `agentDefaults.provider`     | string | `ephemeral` | Default provider name for agents |
+| Field                        | Type   | Default     | Description                                    |
+| ---------------------------- | ------ | ----------- | ---------------------------------------------- |
+| `agentDefaults.provider`     | string | `ephemeral` | Default file index provider new agents use     |
 
 ## License
 
@@ -82,7 +97,8 @@ MIT License - see LICENSE file for details.
 
 #### FileIndexService
 
-The main service class that manages file indexing providers and provides search functionality.
+The main service class that manages file indexing providers and provides search
+functionality.
 
 **Location**: `FileIndexService.ts`
 
@@ -97,7 +113,8 @@ The main service class that manages file indexing providers and provides search 
 - `waitReady(agent)`: Wait for the active provider to be ready
 - `close(agent)`: Close the active provider
 
-**Attach Method**: Initializes agent state with `FileIndexState` using merged configuration.
+**Attach Method**: Initializes agent state with `FileIndexState` using merged
+configuration.
 
 #### FileIndexProvider
 
@@ -135,6 +152,14 @@ In-memory file index provider with lazy initialization.
 
 **Location**: `EphemeralFileIndexProvider.ts`
 
+**Constructor**:
+
+```typescript
+constructor(baseDirectory?: string)
+```
+
+- `baseDirectory`: Base directory for file resolution (defaults to `process.cwd()`)
+
 **Features**:
 
 - Stores file contents and chunks in memory
@@ -142,6 +167,8 @@ In-memory file index provider with lazy initialization.
 - Batch processing with 10 parallel tasks
 - Line-based chunking with 1000 character limit
 - Relevance scoring based on match count and chunk length
+- Note: The `search()` method delegates to `fullTextSearch()`, so no embedding
+  or semantic search is performed
 
 **Key Methods**:
 
@@ -150,9 +177,39 @@ In-memory file index provider with lazy initialization.
 - `fullTextSearch(query, limit)`: Case-insensitive search with scoring
 - `onFileChanged(type, filePath)`: Queue files for reprocessing
 
+**Relevance Scoring**:
+
+The `fullTextSearch` method scores results using the formula:
+
+```text
+relevance = count * (1 + 1 / chunk.length)
+```
+
+Where `count` is the number of times the query appears in the chunk. Shorter
+chunks with matches receive higher scores, rewarding precise matches over
+matches in large blocks of text.
+
+**Note on Provider Initialization**:
+
+The plugin registers the `EphemeralFileIndexProvider` but does not call
+`start()` on it. The provider is lazy-initialized when needed. The
+`StringSearchFileIndexService` is the component that explicitly calls `start()`
+in its `run()` method.
+
+#### StringSearchFileIndexService
+
+Alternative service implementation that wraps `EphemeralFileIndexProvider`. Not
+used by the default plugin installation.
+
+**Location**: `StringSearchFileIndexService.ts`
+
+**Note**: This service is not exported from the package index and is not
+registered by the plugin. It may be used for standalone string-based search
+scenarios.
+
 ### Service Implementation
 
-#### FileIndexService (Service Class)
+#### FileIndexService (TokenRingService)
 
 **Type**: `TokenRingService`
 
@@ -165,16 +222,30 @@ In-memory file index provider with lazy initialization.
 ```typescript
 const FileIndexServiceConfigSchema = z.object({
   agentDefaults: z.object({
-    provider: z.string(),
+    provider: z.string().meta({
+      description: "File index provider new agents use by default",
+    }),
   }).default({ provider: "ephemeral" }),
 });
 ```
 
-**State Management**: Uses `FileIndexState` for tracking active provider per agent.
+**State Management**: Uses `FileIndexState` for tracking active provider per
+agent.
 
 ### Schema Definitions
 
+#### FileIndexServiceConfigSchema
+
+**Location**: `schema.ts`
+
+**Fields**:
+
+- `agentDefaults.provider`: Default provider name for new agents (default:
+  `"ephemeral"`)
+
 #### FileIndexAgentConfigSchema
+
+**Location**: `schema.ts`
 
 ```typescript
 const FileIndexAgentConfigSchema = z.object({
@@ -188,6 +259,8 @@ const FileIndexAgentConfigSchema = z.object({
 
 #### FileIndexProviderConfigSchema
 
+**Location**: `schema.ts`
+
 ```typescript
 const FileIndexProviderConfigSchema = z.object({
   type: z.enum(["ephemeral"]),
@@ -196,7 +269,21 @@ const FileIndexProviderConfigSchema = z.object({
 
 **Fields**:
 
-- `type`: Provider type identifier (currently only "ephemeral" available)
+- `type`: Provider type identifier (currently only `"ephemeral"` available)
+
+#### FileIndexConfigSchema
+
+**Location**: `index.ts`
+
+```typescript
+const FileIndexConfigSchema = z.object({
+  defaultProvider: z.string(),
+});
+```
+
+**Note**: This schema is exported from the package index but does not match the
+`FileIndexServiceConfigSchema` used by the service. It may be legacy or
+intended for future use.
 
 ### Tool Definitions
 
@@ -204,17 +291,30 @@ const FileIndexProviderConfigSchema = z.object({
 
 **Location**: `tools/hybridSearchFileIndex.ts`
 
-**Description**: Hybrid semantic + full-text + token overlap search with merging and deduplication.
+**Display Name**: `FileIndex/hybridSearchFileIndex`
+
+**Description**: Hybrid semantic+full-text+keyword search with merging and
+deduplication. Returns merged relevant code/text blocks.
 
 **Input Schema**:
 
 ```typescript
 const inputSchema = z.object({
-  query: z.string().describe("Text or code query"),
-  topK: z.number().int().default(10).describe("Number of results (default 10)"),
-  textWeight: z.number().default(0.3).describe("Token overlap weight (default 0.3)"),
-  fullTextWeight: z.number().default(0.3).describe("Full-text weight (default 0.3)"),
-  mergeRadius: z.number().int().default(1).describe("Merge radius for adjacent chunks (default 1)"),
+  query: z.string().describe(
+    "Text or code query: keyword, full-text, and semantic matches are combined.",
+  ),
+  topK: z.number().int().default(10).describe(
+    "Number of top merged results to return (default 10)",
+  ),
+  textWeight: z.number().default(0.3).describe(
+    "Weight (0-1) for token overlap score (default 0.3)",
+  ),
+  fullTextWeight: z.number().default(0.3).describe(
+    "Weight (0-1) for full-text search score (default 0.3)",
+  ),
+  mergeRadius: z.number().int().default(1).describe(
+    "How close (in chunk indices) hits must be to merge into a single region (default: 1)",
+  ),
 });
 ```
 
@@ -232,6 +332,64 @@ const inputSchema = z.object({
 3. Normalizes scores and computes weighted hybrid score
 4. Groups results by file and merges adjacent chunks
 5. Returns top-k merged blocks with highest hybrid scores
+
+**Result Format**:
+
+The `result` field contains a JSON string with an array of merged result
+blocks:
+
+```json
+[
+  {
+    "path": "/absolute/path/to/file.ts",
+    "start": 0,
+    "end": 3,
+    "hybridScore": 0.85,
+    "content": "merged content from adjacent chunks"
+  }
+]
+```
+
+| Property        | Type   | Description                                    |
+| --------------- | ------ | ---------------------------------------------- |
+| `path`          | string | Absolute file path                             |
+| `start`         | number | Starting chunk index                           |
+| `end`           | number | Ending chunk index                             |
+| `hybridScore`   | number | Combined relevance score (0-1)                 |
+| `content`       | string | Concatenated content from merged chunks        |
+
+**Note**: When using the `EphemeralFileIndexProvider`, the `search()` method
+delegates to `fullTextSearch()`, so the embedding similarity component will
+always be zero. The hybrid scoring effectively becomes a combination of full-text
+and token overlap scores.
+
+#### file-index_searchFileIndex (Unexported)
+
+**Location**: `tools/searchFileIndex.ts`
+
+**Display Name**: `FileIndex/searchFileIndex`
+
+**Description**: Semantic search for file/document code/text chunks using the
+MariaDB vector database.
+
+**Input Schema**:
+
+```typescript
+const inputSchema = z.object({
+  query: z.string().describe(
+    "Freeform string query (code, question, natural language, etc) to search for similar file chunks.",
+  ),
+  k: z.number().int().default(5).describe(
+    "Number of top results to return (default 5)",
+  ),
+});
+```
+
+**Note**: This tool is not exported in `tools.ts` and is not available to agents
+by default. The tool description references "MariaDB vector database" but the
+actual implementation delegates to `fileIndex.search()`. When using the
+`EphemeralFileIndexProvider`, this performs full-text search rather than
+semantic search.
 
 ### State Management
 
@@ -263,6 +421,10 @@ const inputSchema = z.object({
 
 **Usage**: `/fileindex search <query>`
 
+**Input**:
+
+- `query` (remainder, required): Search query text
+
 **Behavior**:
 
 - Waits for index to be ready
@@ -286,6 +448,10 @@ const inputSchema = z.object({
 **Description**: Set the active provider
 
 **Usage**: `/fileindex provider set <providerName>`
+
+**Input**:
+
+- `providerName` (positional, required): The provider name to set
 
 **Behavior**:
 
@@ -315,7 +481,7 @@ const inputSchema = z.object({
 
 **Usage**: `/fileindex provider reset`
 
-**Behavior**: Resets active provider to configured default
+**Behavior**: Resets active provider to the reset configured value
 
 ### Usage Examples
 
@@ -354,7 +520,8 @@ const result = await agent.executeTool("file-index_hybridSearchFileIndex", {
 
 ### Testing
 
-Run tests with:
+The package includes a test configuration in `bun.config.ts` but currently has
+no test files.
 
 ```bash
 bun test

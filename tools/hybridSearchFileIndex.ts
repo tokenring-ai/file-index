@@ -1,5 +1,6 @@
 import type Agent from "@tokenring-ai/agent/Agent";
 import type { TokenRingToolDefinition, TokenRingToolResult } from "@tokenring-ai/chat/schema";
+import EnhancedMap from "@tokenring-ai/utility/map/enhancedMap";
 import { z } from "zod";
 import type { SearchResult } from "../FileIndexProvider.ts";
 import FileIndexService from "../FileIndexService.ts";
@@ -38,7 +39,7 @@ async function execute({ query, topK, textWeight, fullTextWeight, mergeRadius }:
     hybridScore: number;
   }
 
-  const allHits = new Map<string, EnrichedHit>();
+  const allHits = new EnhancedMap<string, EnrichedHit>();
 
   // Process embedding hits
   for (const hit of embeddingHits) {
@@ -68,8 +69,8 @@ async function execute({ query, topK, textWeight, fullTextWeight, mergeRadius }:
   }
 
   // Normalize scores and compute hybrid score
-  const maxFullText = Math.max(...Array.from(allHits.values()).map((h: EnrichedHit) => h.fullTextScore));
-  const rescored = Array.from(allHits.values()).map((hit: EnrichedHit): HitWithHybridScore => {
+  const maxFullText = Math.max(...allHits.mapValues(h => h.fullTextScore));
+  const rescored = allHits.mapValues(hit => {
     const normalizedFullText = maxFullText ? hit.fullTextScore / maxFullText : 0;
     const hybridScore = (1 - textWeight - fullTextWeight) * hit.embScore + textWeight * hit.textScore + fullTextWeight * normalizedFullText;
     return { ...hit, hybridScore };
