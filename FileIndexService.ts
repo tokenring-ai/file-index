@@ -9,8 +9,10 @@ import type { z } from "zod";
 import type FileIndexProvider from "./FileIndexProvider.ts";
 import type { SearchResult } from "./FileIndexProvider.ts";
 
-import { FileIndexAgentConfigSchema, type FileIndexServiceConfigSchema } from "./schema.ts";
+import { FileIndexAgentConfigSchema, FileIndexServiceConfigSchema } from "./schema.ts";
 import { FileIndexState } from "./state/FileIndexState.ts";
+
+type FileIndexServiceConfig = z.output<typeof FileIndexServiceConfigSchema>;
 
 export default class FileIndexService implements TokenRingService {
   readonly name = "FileIndexService";
@@ -21,7 +23,15 @@ export default class FileIndexService implements TokenRingService {
   registerFileIndexProvider = this.providers.set;
   getAvailableFileIndexProviders = this.providers.keysArray;
 
-  constructor(readonly options: z.output<typeof FileIndexServiceConfigSchema>) {}
+  private options: FileIndexServiceConfig = FileIndexServiceConfigSchema.parse({});
+
+  constructor(options?: FileIndexServiceConfig) {
+    if (options) this.options = options;
+  }
+
+  reconfigure(options: FileIndexServiceConfig): void {
+    this.options = options;
+  }
 
   attach(agent: Agent): void {
     const agentConfig = deepClone(this.options.agentDefaults, agent.getAgentConfigSlice("fileIndex", FileIndexAgentConfigSchema));

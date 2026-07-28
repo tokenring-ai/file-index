@@ -10,7 +10,7 @@ import { FileIndexServiceConfigSchema } from "./schema.ts";
 import tools from "./tools.ts";
 
 const packageConfigSchema = z.object({
-  fileIndex: FileIndexServiceConfigSchema.prefault({}),
+  fileIndex: FileIndexServiceConfigSchema,
 });
 
 export default {
@@ -18,14 +18,17 @@ export default {
   displayName: "File Indexing",
   version: packageJSON.version,
   description: packageJSON.description,
-  install(app, config) {
-    const fileIndexService = new FileIndexService(config.fileIndex);
+  install(app) {
+    const fileIndexService = new FileIndexService();
     app.addServices(fileIndexService);
 
     fileIndexService.registerFileIndexProvider("ephemeral", new EphemeralFileIndexProvider());
 
     app.waitForService(ChatService, chatService => chatService.addTools(...tools));
     app.waitForService(AgentCommandService, agentCommandService => agentCommandService.addAgentCommands(agentCommands));
+  },
+  reconfigure(app, config) {
+    app.requireService(FileIndexService).reconfigure(config.fileIndex);
   },
   configSchema: packageConfigSchema,
 } satisfies TokenRingPlugin<typeof packageConfigSchema>;

@@ -20,4 +20,5 @@ export const FileIndexServiceConfigSchema = z
       .default({ provider: "ephemeral" })
       .meta({ label: "Agent Defaults" } satisfies ConfigFieldMeta),
   })
+  .prefault({})
   .meta({ label: "File Index", description: "Fast file lookup/search index for agents" } satisfies ConfigFieldMeta);
