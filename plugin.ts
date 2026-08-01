@@ -19,12 +19,11 @@ export default {
   version: packageJSON.version,
   description: packageJSON.description,
   install(app) {
-    const fileIndexService = new FileIndexService();
-    app.addServices(fileIndexService);
+    const fileIndexService = app.addService(new FileIndexService());
 
     fileIndexService.registerFileIndexProvider("ephemeral", new EphemeralFileIndexProvider());
 
-    app.waitForService(ChatService, chatService => chatService.addTools(...tools));
+    app.waitForService(ChatService, chatService => chatService.addTools(tools));
     app.waitForService(AgentCommandService, agentCommandService => agentCommandService.addAgentCommands(agentCommands));
   },
   reconfigure(app, config) {

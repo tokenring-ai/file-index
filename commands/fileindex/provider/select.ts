@@ -6,7 +6,7 @@ import { FileIndexState } from "../../../state/FileIndexState.ts";
 const inputSchema = {} as const satisfies AgentCommandInputSchema;
 
 async function execute({ agent }: AgentCommandInputType<typeof inputSchema>): Promise<string> {
-  const fileIndexService = agent.requireServiceByType(FileIndexService);
+  const fileIndexService = agent.requireService(FileIndexService);
   const available = fileIndexService.getAvailableFileIndexProviders();
   if (available.length === 0) return "No file index providers are registered.";
   if (available.length === 1 && available[0]) {

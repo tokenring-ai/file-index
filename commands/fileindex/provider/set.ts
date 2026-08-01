@@ -12,8 +12,8 @@ const inputSchema = {
   ],
 } as const satisfies AgentCommandInputSchema;
 
-function execute({ positionals: { providerName }, agent }: AgentCommandInputType<typeof inputSchema>): string {
-  const fileIndexService = agent.requireServiceByType(FileIndexService);
+function execute({ args: { providerName }, agent }: AgentCommandInputType<typeof inputSchema>): string {
+  const fileIndexService = agent.requireService(FileIndexService);
 
   const available = fileIndexService.getAvailableFileIndexProviders();
   if (available.includes(providerName)) {

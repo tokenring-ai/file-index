@@ -11,7 +11,7 @@ const name = "file-index_searchFileIndex";
 const displayName = "FileIndex/searchFileIndex";
 
 async function execute({ query, k }: z.output<typeof inputSchema>, agent: Agent): Promise<TokenRingToolResult> {
-  const fileIndex = agent.requireServiceByType(FileIndexService);
+  const fileIndex = agent.requireService(FileIndexService);
 
   if (!query) {
     throw new ToolCallError(name, `Missing query parameter`);

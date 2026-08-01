@@ -7,7 +7,7 @@ const inputSchema = {
 } as const satisfies AgentCommandInputSchema;
 
 async function execute({ remainder, agent }: AgentCommandInputType<typeof inputSchema>): Promise<string> {
-  const fileIndexService = agent.requireServiceByType(FileIndexService);
+  const fileIndexService = agent.requireService(FileIndexService);
   await fileIndexService.waitReady(agent);
   const results = await fileIndexService.search(remainder, 10, agent);
   if (results.length === 0) return "No results found.";

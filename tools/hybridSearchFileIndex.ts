@@ -14,7 +14,7 @@ const displayName = "FileIndex/hybridSearchFileIndex";
  * Combines: (1) embedding similarity (2) full-text search (3) token overlap
  */
 async function execute({ query, topK, textWeight, fullTextWeight, mergeRadius }: z.output<typeof inputSchema>, agent: Agent): Promise<TokenRingToolResult> {
-  const fileIndex = agent.requireServiceByType(FileIndexService);
+  const fileIndex = agent.requireService(FileIndexService);
 
   // Get results from both search methods
   const [embeddingHits, fullTextHits] = await Promise.all([fileIndex.search(query, topK * 4, agent), fileIndex.fullTextSearch(query, topK * 4, agent)]);
