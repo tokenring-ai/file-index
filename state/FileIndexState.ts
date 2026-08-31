@@ -32,6 +32,6 @@ export class FileIndexState extends AgentStateSlice<typeof serializationSchema> 
   }
 
   show(): string {
-    return `Active FileIndex Provider: ${this.activeProvider}`;
+    return `Active FileIndex Provider: ${this.activeProvider ?? "none"}`;
   }
 }

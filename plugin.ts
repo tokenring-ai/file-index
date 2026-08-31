@@ -19,7 +19,7 @@ export default {
   version: packageJSON.version,
   description: packageJSON.description,
   install(app) {
-    const fileIndexService = app.addService(new FileIndexService());
+    const fileIndexService = app.addService(FileIndexService, new FileIndexService());
 
     fileIndexService.registerFileIndexProvider("ephemeral", new EphemeralFileIndexProvider());
 

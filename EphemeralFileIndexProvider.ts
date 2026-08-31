@@ -149,12 +149,24 @@ export default class EphemeralFileIndexProvider extends FileIndexProvider {
   }
 
   private chunkContent(content: string): string[] {
+    const MAX_CHUNK_SIZE = 1000;
     const lines = content.split("\n");
     const chunks: string[] = [];
     let currentChunk = "";
 
     for (const line of lines) {
-      if (currentChunk.length + line.length > 1000) {
+      if (line.length > MAX_CHUNK_SIZE) {
+        if (currentChunk) {
+          chunks.push(currentChunk);
+          currentChunk = "";
+        }
+        for (let i = 0; i < line.length; i += MAX_CHUNK_SIZE) {
+          chunks.push(line.slice(i, i + MAX_CHUNK_SIZE));
+        }
+        continue;
+      }
+
+      if (currentChunk.length + line.length > MAX_CHUNK_SIZE) {
         chunks.push(currentChunk);
         currentChunk = line;
       } else {
