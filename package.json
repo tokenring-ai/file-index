@@ -5,13 +5,12 @@
   "dependencies": {
     "@tokenring-ai/app": "workspace:*",
     "@tokenring-ai/chat": "workspace:*",
+    "@tokenring-ai/filesystem": "workspace:*",
     "zod": "^4.6.7",
     "@tokenring-ai/agent": "workspace:*",
-    "@tokenring-ai/utility": "workspace:*",
-    "fs-extra": "^11.4.1"
+    "@tokenring-ai/utility": "workspace:*"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
     "typescript": "^7.0.2"
   },
   "exports": {

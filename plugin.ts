@@ -21,7 +21,7 @@ export default {
   install(app) {
     const fileIndexService = app.addService(FileIndexService, new FileIndexService());
 
-    fileIndexService.registerFileIndexProvider("ephemeral", new EphemeralFileIndexProvider());
+    fileIndexService.registerFileIndexProvider("ephemeral", new EphemeralFileIndexProvider(app));
 
     app.waitForService(ChatService, chatService => chatService.addTools(tools));
     app.waitForService(AgentCommandService, agentCommandService => agentCommandService.addAgentCommands(agentCommands));

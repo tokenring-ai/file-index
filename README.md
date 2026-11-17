@@ -23,8 +23,8 @@ state management.
 - **Result Merging**: Merges adjacent/nearby chunks for better context coverage
 - **Chat Commands**: Command interface for managing providers and searches
 - **State Management**: Agent-specific state persistence for active provider
-- **Lazy Initialization**: Non-blocking initialization with background processing
-- **File Change Detection**: Handles file changes via polling (250ms interval)
+- **Automatic Indexing**: Indexes the agent-allowed host paths, refreshed on search
+- **File Change Detection**: Files written by agents are re-indexed on the next search
 
 ## Installation
 
@@ -286,39 +286,39 @@ interface SearchResult {
 
 ### EphemeralFileIndexProvider
 
-In-memory file index provider with lazy initialization. Extends
-`FileIndexProvider`.
+In-memory file index provider. Extends `FileIndexProvider`. It indexes the host
+files the agent may read (the filesystem's allowed paths, honoring `.gitignore`
+and `.aiignore` like `@` file search) without any setup by the caller.
 
 **Location**: `EphemeralFileIndexProvider.ts`
 
 ```typescript
-constructor(private readonly baseDirectory: string = process.cwd())
+constructor(private readonly app: TokenRingApp)
 ```
 
-- `baseDirectory`: Base directory for file resolution (defaults to `process.cwd()`)
+**Indexing**:
 
-**Features**:
-
-- Stores file contents and chunks in memory
-- Background polling for file changes (250ms interval)
-- Batch processing with 10 parallel tasks
-- Line-based chunking with 1000 character limit
-- Relevance scoring based on match count and chunk length
+- The index is refreshed when a search runs, at most every 15 seconds. Only
+  files whose modification time changed are read again.
+- Files reported as written through `FileSystemService.onFileWritten` are
+  re-read on the next search.
+- Files over 1 MB and binary files (a NUL byte in the first 8 KB) are skipped.
+- At most 20,000 files are indexed.
+- Line-based chunking with a 1000 character limit.
 - The `search()` method delegates to `fullTextSearch()`, so no embedding or
-  semantic search is performed
+  semantic search is performed.
 
 | Method | Description |
 | ------ | ----------- |
-| `start(): Promise<void>` | Begin lazy initialization; returns the initialization promise |
-| `onFileChanged(type: string, filePath: string): void` | Queue files for reprocessing; deletes on `"unlink"` events |
-| `waitReady(): Promise<void> \| undefined` | Return the initialization promise if started, otherwise `undefined` |
-| `processFile(filePath: string): Promise<void>` | Read and chunk file content; removes from index if file does not exist |
-| `fullTextSearch(query: string, limit: number = 10): Promise<SearchResult[]>` | Case-insensitive search with relevance scoring |
+| `waitReady(): Promise<void>` | Bring the index up to date (shared by concurrent callers) |
+| `processFile(filePath: string): Promise<void>` | Read and chunk one file; removes it from the index if it is missing, too large or binary |
+| `onFileChanged(type: string, filePath: string): void` | Mark a file to be re-read on the next search; deletes on `"unlink"` events |
+| `fullTextSearch(query: string, limit: number = 10): Promise<SearchResult[]>` | Case-insensitive search; ranks all matches before applying `limit` |
 | `search(query: string, limit: number = 10): Promise<SearchResult[]>` | Delegates to `fullTextSearch()` |
 | `setCurrentFile(filePath: string): void` | Set the current file context |
 | `clearCurrentFile(): void` | Clear the current file context |
 | `getCurrentFile(): string \| null` | Get the current file path |
-| `close(): void` | Clear timer, file contents, and file queue |
+| `close(): void` | Stop listening for writes and clear the index |
 
 **Relevance Scoring**:
 
@@ -331,33 +331,6 @@ relevance = count * (1 + 1 / chunk.length)
 Where `count` is the number of times the query appears in the chunk. Shorter
 chunks with matches receive higher scores, rewarding precise matches over
 matches in large blocks of text.
-
-**Note on Provider Initialization**:
-
-The plugin registers the `EphemeralFileIndexProvider` but does not call
-`start()` on it. The provider is lazy-initialized when needed. The
-`StringSearchFileIndexService` is the component that explicitly calls `start()`
-in its `run()` method.
-
-### StringSearchFileIndexService
-
-Alternative service implementation that wraps `EphemeralFileIndexProvider`.
-Implements the `TokenRingService` interface. Not used by the default plugin
-installation and not exported from the package index.
-
-**Location**: `StringSearchFileIndexService.ts`
-
-```typescript
-constructor(private app: TokenRingApp, private baseDirectory?: string)
-```
-
-| Method | Description |
-| ------ | ----------- |
-| `async run(): Promise<void>` | Start the provider's lazy initialization |
-| `waitReady(agent: Agent): Promise<void> \| undefined` | Log a waiting message and delegate to `provider.waitReady()` |
-| `async fullTextSearch(query: string, limit: number = 10, agent: Agent): Promise<SearchResult[]>` | Wait for readiness, then perform full-text search |
-| `search(query: string, limit: number = 10, _agent: Agent): Promise<SearchResult[]>` | Delegate to `provider.search()` |
-| `close(): void` | Close the underlying provider |
 
 ### FileIndexState
 
@@ -430,7 +403,7 @@ update the service configuration at runtime.
 | `@tokenring-ai/chat`    | Chat and tools integration        |
 | `@tokenring-ai/utility` | Utility functions                 |
 | `zod`                   | Schema validation                 |
-| `fs-extra`              | File system operations            |
+| `@tokenring-ai/filesystem` | Host file access and allowed paths |
 
 ## Testing
 
